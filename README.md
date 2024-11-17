@@ -1,0 +1,2 @@
+# Plugin.DependencyAnalyzer
+This plugin can show dependencies of all references in CLI assemblies & libraries. This plugin can help you determine how libraries are referenced between files. Also it can show you unreferenced members of shared libraries. For example if we have libraries with common code shared between many projects.
