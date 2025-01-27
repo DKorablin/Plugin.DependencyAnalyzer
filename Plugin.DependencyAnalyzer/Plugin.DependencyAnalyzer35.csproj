@@ -44,8 +44,9 @@
     <Reference Include="Microsoft.Msagl.GraphViewerGdi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=6baa2c1345e83b6e, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AutomaticGraphLayout.GraphViewerGDI.1.1.13\lib\netstandard2.0\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
     </Reference>
-    <Reference Include="PEReader, Version=1.3.4.0, Culture=neutral, PublicKeyToken=a8ac5fc45c3adb8d, processorArchitecture=MSIL">
-      <HintPath>..\packages\AlphaOmega.PEReader.1.3.4\lib\net20\PEReader.dll</HintPath>
+    <Reference Include="PEReader, Version=1.3.5.0, Culture=neutral, PublicKeyToken=a8ac5fc45c3adb8d">
+      <HintPath>..\packages\AlphaOmega.PEReader.1.3.5\lib\net20\PEReader.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="SAL.Flatbed, Version=1.2.10.0, Culture=neutral, PublicKeyToken=a8ac5fc45c3adb8d">
       <HintPath>..\packages\SAL.Flatbed.1.2.10\lib\net20\SAL.Flatbed.dll</HintPath>
