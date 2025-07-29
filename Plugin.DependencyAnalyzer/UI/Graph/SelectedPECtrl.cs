@@ -17,6 +17,6 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 		}
 
 		public SelectedPECtrl()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 	}
 }

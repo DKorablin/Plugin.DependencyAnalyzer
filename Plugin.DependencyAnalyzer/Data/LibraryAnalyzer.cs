@@ -54,7 +54,7 @@ namespace Plugin.DependencyAnalyzer.Data
 
 		public IEnumerable<Library> GetReferencedLibraries(Library parent)
 		{
-			//We have to ignore libraries without version because native liabraries are added without version informtaion (See: AddToLoaded)
+			//We have to ignore libraries without version because native libraries are added without version information (See: AddToLoaded)
 			HashSet<Library> alreadyAdded = new HashSet<Library>();
 
 			foreach(Library lib in this.KnownLibraries.Values)
@@ -66,7 +66,6 @@ namespace Plugin.DependencyAnalyzer.Data
 		}
 
 		/// <summary>Search for unreferenced assemblies in current folder</summary>
-		/// <param name="path">Root path where initial library was searched</param>
 		/// <returns>Stream of unreferenced libraries</returns>
 		public IEnumerable<Library> FindUnreferencedLibraries()
 		{
@@ -147,7 +146,7 @@ namespace Plugin.DependencyAnalyzer.Data
 
 			if((this._searchType & LibrarySearchType.AssemblyRef) == LibrarySearchType.AssemblyRef)
 				foreach(AssemblyRefRow asmRef in tables.AssemblyRef)
-				{//Поиск сборок добавленных через References
+				{//Search for assemblies added via References
 					AssemblyName assembly = asmRef.AssemblyName;
 
 					Library lib = this.FindAssemblyInLoaded(assembly.Name, assembly.Version)
@@ -158,14 +157,14 @@ namespace Plugin.DependencyAnalyzer.Data
 						lib = new Library(null, asmRef.Name, asmRef.Version, assembly, false);
 						this.AddToLoaded(lib);
 					} else if(lib.IsSystem && (this._searchType & LibrarySearchType.Gac) != LibrarySearchType.Gac)
-						continue;//Сборка из GAC, но такие сборки, по условию поиска - пропускаем
+						continue;//Assembly from GAC, but such assemblies, according to the search condition - skip
 
 					result.Add(lib);
 				}
 
 			if((this._searchType & LibrarySearchType.ModuleRef) == LibrarySearchType.ModuleRef)
 				foreach(ModuleRefRow module in tables.ModuleRef)
-				{//Поиск библиотек добавленных через DllImportAttribute
+				{//Search for libraries added via DllImportAttribute
 					if(String.IsNullOrWhiteSpace(module.Name))
 						continue;
 
@@ -225,7 +224,7 @@ namespace Plugin.DependencyAnalyzer.Data
 			try
 			{
 				if(assembly.CultureInfo != null && assembly.CultureInfo.LCID == CultureInfo.InvariantCulture.LCID)
-					assembly.CultureInfo = null;//HACK: В GAC лежит безкультурная сборка
+					assembly.CultureInfo = null;//HACK: There is a cultureless assembly in GAC
 
 				path = AssemblyCache.QueryAssemblyInfo(assembly.FullName);
 			} catch(FileNotFoundException)
@@ -248,7 +247,7 @@ namespace Plugin.DependencyAnalyzer.Data
 			if(lib == null)
 			{
 				if(Path.GetExtension(moduleName) == String.Empty)//If library without extension, then trying to add extension and search with it
-					lib = this.FindLibraryInPath2(rootFolder, moduleName + ".dll");//Trying to add resursively and it will be added to loaded collection
+					lib = this.FindLibraryInPath2(rootFolder, moduleName + ".dll");//Trying to add recursively and it will be added to loaded collection
 				else if(!String.Equals(rootFolder, this._localPath, StringComparison.OrdinalIgnoreCase))
 					lib = this.FindLibraryInPath2(this._localPath, moduleName);//System library can reference to library that stored locally. Ex:kernel32.dll -> api-ms-win-core-file-l1-2-0.dll; But location is near devenv.exe
 				else

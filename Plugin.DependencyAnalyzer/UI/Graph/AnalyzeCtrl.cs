@@ -46,15 +46,15 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 		}
 
 		public AnalyzeCtrl()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 
 		protected override void OnCreateControl()
 		{
-			bnHilight.Checked = this.Plugin.Settings.HilightReferencedMembers;
+			bnHilight.Checked = this.Plugin.Settings.HighlightReferencedMembers;
 			base.OnCreateControl();
 		}
 
-		private static ToolStripMenuItem AllItems = new ToolStripMenuItem("All");
+		private static readonly ToolStripMenuItem AllItems = new ToolStripMenuItem("All");
 		private void FillAssemblies(IEnumerable<Library> assemblies)
 		{
 			List<ToolStripMenuItem> itemsToAdd = new List<ToolStripMenuItem>();
@@ -123,9 +123,9 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 			lblStatus.Text = String.Join(" ", status);
 		}
 
-		private void bnHilight_CheckedChanged(Object sender, EventArgs e)
+		private void bnHighlight_CheckedChanged(Object sender, EventArgs e)
 		{
-			this.Plugin.Settings.HilightReferencedMembers = tvReferences.HilightReferencedMembers = bnHilight.Checked;
+			this.Plugin.Settings.HighlightReferencedMembers = tvReferences.HighlightReferencedMembers = bnHilight.Checked;
 
 			if(ddlChildAssemblies.Items.Count > 0)
 				this.ddlChildAssemblies_SelectedIndexChanged(sender, e);

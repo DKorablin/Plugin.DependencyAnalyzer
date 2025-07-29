@@ -7,6 +7,7 @@ using SAL.Windows;
 
 namespace Plugin.DependencyAnalyzer
 {
+	/// <summary>The main entry point for dependency analyzer plugin</summary>
 	public class PluginWindows : IPlugin,IPluginSettings<PluginSettings>
 	{
 		private readonly IHostWindows _hostWindows;
@@ -36,7 +37,7 @@ namespace Plugin.DependencyAnalyzer
 			}
 		}
 
-		/// <summary>Настройки для взаимодействия из плагина</summary>
+		/// <summary>Settings for interaction from the plugin</summary>
 		public PluginSettings Settings
 		{
 			get
@@ -52,6 +53,9 @@ namespace Plugin.DependencyAnalyzer
 
 		Object IPluginSettings.Settings => this.Settings;
 
+		/// <summary>Create instance of dependency analyzer plugin and specify host interface</summary>
+		/// <param name="hostWindows">The host interface</param>
+		/// <exception cref="ArgumentNullException"><paramref name="hostWindows"/> is required</exception>
 		public PluginWindows(IHostWindows hostWindows)
 			=> this._hostWindows = hostWindows ?? throw new ArgumentNullException(nameof(hostWindows));
 
@@ -81,11 +85,11 @@ namespace Plugin.DependencyAnalyzer
 
 			this._menuReferencesGraph = menuView.Create("References Graph");
 			this._menuReferencesGraph.Name = "View.Executable.References.Graph";
-			this._menuReferencesGraph.Click += (sender, e) => { OpenDependenciesWindow(OpenGraphFilePath()); };
+			this._menuReferencesGraph.Click += (sender, e) => this.OpenDependenciesWindow(OpenGraphFilePath());
 
 			this._menuReferencesAnalyze = menuView.Create("Reference Analyze");
 			this._menuReferencesAnalyze.Name = "View.Executable.References.Analyze";
-			this._menuReferencesAnalyze.Click += new EventHandler(menuReferencesAnalyze_Click);
+			this._menuReferencesAnalyze.Click += new EventHandler(this.menuReferencesAnalyze_Click);
 
 			this.MenuWinApi.Items.Add(this._menuReferencesGraph);
 			this.MenuWinApi.Items.Add(this._menuReferencesAnalyze);
@@ -104,29 +108,26 @@ namespace Plugin.DependencyAnalyzer
 			return true;
 		}
 
+		/// <summary>Dynamic public method for creating plugin control from plugin itself.</summary>
+		/// <param name="typeName">The name of control to create.</param>
+		/// <param name="args">Dynamic arguments for specific plugin control</param>
+		/// <returns>Created plugin control with specific arguments.</returns>
 		public IWindow GetPluginControl(String typeName, Object args)
 			=> this.CreateWindow(typeName, false, args);
 
 		internal void CallDependencyInfo(DocumentDependencies document, Data.IDataObject data, Boolean isOpen = false)
-			=> CallDependencyInfo(document, data, data == null ? EventType.Close : EventType.Info, isOpen);
+			=> this.CallDependencyInfo(document, data, data == null ? EventType.Close : EventType.Info, isOpen);
 
 		internal void CallDependencyInfo(DocumentDependencies document, Data.IDataObject data, EventType type, Boolean isOpen = false)
 		{
 			if(isOpen)
-				this.CreateWindow<PanelDependency, PanelDependencySettings>(new PanelDependencySettings()
+			{
+				var settings = new PanelDependencySettings(data)
 				{
 					GraphFilePath = document.Settings.GraphFilePath,
-				});
-
-			EventArgsBase args = new EventArgsBase()
-			{
-				GraphFilePath = document.Settings.GraphFilePath,
-				Type = type,
-				Data = data,
-			};
-			var evt = this.OnDependenciesChanged;
-			if(evt != null)
-				evt(document, args);
+				};
+				this.CreateWindow<PanelDependency, PanelDependencySettings>(settings);
+			}
 		}
 
 		internal static String OpenGraphFilePath()
@@ -136,7 +137,7 @@ namespace Plugin.DependencyAnalyzer
 			return OpenFilePath(filter, title);
 		}
 
-		internal static String OpenAnalyseFilePath()
+		internal static String OpenAnalyzeFilePath()
 		{
 			const String filter = "Executable files (*.dll;*.exe)|*.dll;*.exe|All files (*.*)|*.*";
 			const String title = "Open executable file to analyze for (un)used assembly members";
@@ -182,7 +183,7 @@ namespace Plugin.DependencyAnalyzer
 		#region Event Handlers
 		private void menuReferencesAnalyze_Click(Object sender, EventArgs e)
 		{
-			String filePath = OpenAnalyseFilePath();
+			String filePath = OpenAnalyzeFilePath();
 			if(filePath == null)
 				return;
 

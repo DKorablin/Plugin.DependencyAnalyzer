@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.GraphViewerGdi;
 using Plugin.DependencyAnalyzer.Data;
+using Plugin.DependencyAnalyzer.Events;
 using Plugin.DependencyAnalyzer.Properties;
 using Plugin.DependencyAnalyzer.UI.Graph;
 using SAL.Flatbed;
@@ -14,12 +18,14 @@ using SAL.Windows;
 
 namespace Plugin.DependencyAnalyzer
 {
+	/// <summary>Form to draw all dependencies for selected executable PE file</summary>
 	public partial class DocumentDependencies : UserControl, IPluginSettings<DocumentDependenciesSettings>
 	{//https://github.com/Microsoft/automatic-graph-layout
 
 		private const String Caption = "Dependencies";
 		private Int32 _currentRecursiveLevel = 0;
 		private HashSet<String> _uniqueEdges;
+		private readonly Stopwatch _loadLibraryElapsed = new Stopwatch();
 
 		private Object _selectedObject;
 		private Object _selectedObjectAttr;
@@ -29,6 +35,7 @@ namespace Plugin.DependencyAnalyzer
 		private DocumentDependenciesSettings _settings;
 		Object IPluginSettings.Settings => this.Settings;
 
+		/// <summary>Settings for currently opened document.</summary>
 		public DocumentDependenciesSettings Settings => this._settings ?? (this._settings = new DocumentDependenciesSettings());
 
 		internal LibraryAnalyzer Analyzer
@@ -43,15 +50,18 @@ namespace Plugin.DependencyAnalyzer
 			}
 		}
 
+		/// <summary>Create instance of dependency analyzer form.</summary>
 		public DocumentDependencies()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 
+		/// <summary>Event to show current control and attach extra event handlers</summary>
 		protected override void OnCreateControl()
 		{
-			this.Plugin.Settings.PropertyChanged += Settings_PropertyChanged;
+			this.Plugin.Settings.PropertyChanged += this.Settings_PropertyChanged;
 			this.Window.Caption = Caption;
 			this.Window.SetTabPicture(Resources.iPuzzles);
-			this.Window.Closed += new EventHandler(Window_Closed);
+			this.Window.Shown += new EventHandler(this.Window_Shown);
+			this.Window.Closed += new EventHandler(this.Window_Closed);
 			splitVertical.Panel2Collapsed = true;
 			splitHorizontal.Panel2Collapsed = true;
 
@@ -66,26 +76,22 @@ namespace Plugin.DependencyAnalyzer
 			graphView.ZoomF = this.Plugin.Settings.ZoomF;
 			graphView.ZoomWindowThreshold = this.Plugin.Settings.ZoomWindowThreshold;
 
-			foreach(LibrarySearchType searchType in Enum.GetValues(typeof(LibrarySearchType)))
-			{
-				ToolStripMenuItem menuItem = new ToolStripMenuItem(searchType.ToString())
-				{
-					Checked = false,
-					Tag = searchType,
-					CheckOnClick = true,
-				};
-				menuItem.CheckedChanged += ddlSearchType_CheckedChanged;
-				ddlSearchType.DropDownItems.Add(menuItem);
-			}
 			base.OnCreateControl();
 
 			this.LoadFile();
 		}
 
+		private void Window_Shown(Object sender, EventArgs e)
+		{
+			if(this.Plugin.Settings.SplitterHorizontalDistance > 0)
+				splitHorizontal.SplitterDistance = this.Plugin.Settings.SplitterHorizontalDistance;
+		}
+
 		private void Window_Closed(Object sender, EventArgs e)
 		{
-			this.Plugin.Settings.PropertyChanged -= Settings_PropertyChanged;
+			this.Plugin.Settings.PropertyChanged -= this.Settings_PropertyChanged;
 			this.Plugin.CallDependencyInfo(this, null);
+			this.Plugin.Settings.SplitterHorizontalDistance = splitHorizontal.SplitterDistance;
 		}
 
 		private void Settings_PropertyChanged(Object sender, PropertyChangedEventArgs e)
@@ -97,7 +103,11 @@ namespace Plugin.DependencyAnalyzer
 			{
 			case nameof(PluginSettings.RecursiveLevel):
 			case nameof(PluginSettings.SearchType):
-				this.LoadFile();//Заново загружаем файл для обновления параметров. В идеале, конечно, перерисовывать недостающие элементы, а не перерисовывать всё (Иначе может произойти сброс того, что было у пользователя на экране)
+				this.LoadFile();//Reload the file to update the parameters. Ideally, of course, redraw missing elements, and not redraw everything (Otherwise, what user had on the screen may be reset)
+				break;
+			case nameof(PluginSettings.SplitterHorizontalDistance):
+				if(this.Plugin.Settings.SplitterHorizontalDistance > 0)
+					splitHorizontal.SplitterDistance = this.Plugin.Settings.SplitterHorizontalDistance;
 				break;
 			default:
 				this.Plugin.Settings.SetObjectData(graphView.Graph.Attr);//Reflected Attribute properties
@@ -114,9 +124,9 @@ namespace Plugin.DependencyAnalyzer
 			Object obj = graphView.GetObjectAt(e.X, e.Y);
 			DNode dNode = obj as DNode;
 			DEdge dEdge = dNode != null ? null : obj as DEdge;
-			DLabel dLabel = dEdge != null || dNode != null ? null : obj as DLabel;
+			/*DLabel dLabel = dEdge != null || dNode != null ? null : obj as DLabel;
 
-			/*Node node = null;
+			Node node = null;
 			Edge edge = null;
 			if(dNode != null)
 				node = dNode.DrawingNode;
@@ -173,8 +183,10 @@ namespace Plugin.DependencyAnalyzer
 				Library lib = (Library)dNode.DrawingNode.UserData;
 				this.Plugin.OpenDependenciesWindow(lib.Path);
 			} else if(e.ClickedItem == tsmiGraphNodeRemove)
-				dNode.DrawingNode.IsVisible = false;
-			else if(e.ClickedItem == tsmiGraphOpenLocation)
+			{
+				this.RemoveNodeRecursive(dNode.Node);
+				//dNode.DrawingNode.IsVisible = false;
+			} else if(e.ClickedItem == tsmiGraphOpenLocation)
 			{
 				Library lib = (Library)dNode.DrawingNode.UserData;
 				Shell32.OpenFolderAndSelectItem(lib.Path);
@@ -190,18 +202,36 @@ namespace Plugin.DependencyAnalyzer
 			cmsGraphEdge.Tag = null;
 		}
 
+		private void cmsListNodes_Opening(Object sender, CancelEventArgs e)
+		{
+			var relativePoint = lvNodes.PointToClient(Cursor.Position);
+			var hitTestInfo = lvNodes.HitTest(relativePoint);
+			e.Cancel = lvNodes.SelectedItems.Count == 0 || hitTestInfo.Item == null;
+			if(e.Cancel == false)
+			{
+				Node node = lvNodes.SelectedGraphNode;
+				Library lib = (Library)node.UserData;
+				tsmiListNodes_OpenLocation.Visible = lib.Path != null;
+			}
+		}
+
 		private void cmsListNodes_ItemClicked(Object sender, ToolStripItemClickedEventArgs e)
 		{
 			if(lvNodes.SelectedItems.Count > 0)
 				if(e.ClickedItem == tsmiListNodes_Focus)
 				{
-					Node node = (Node)lvNodes.SelectedItems[0].Tag;
+					Node node = lvNodes.SelectedGraphNode;
 					graphView.ShowBBox(new Microsoft.Msagl.Core.Geometry.Rectangle()
 					{
 						Center = node.Pos,
 						Width = graphView.Width,
 						Height = graphView.Height
 					});
+				}else if(e.ClickedItem == tsmiListNodes_OpenLocation)
+				{
+					Node node = lvNodes.SelectedGraphNode;
+					Library lib = (Library)node.UserData;
+					Shell32.OpenFolderAndSelectItem(lib.Path);
 				}
 		}
 
@@ -237,26 +267,26 @@ namespace Plugin.DependencyAnalyzer
 			switch(e.KeyCode)
 			{
 			case Keys.F12:
-				bnGraphAsList_Click(sender, e);
+				this.bnGraphAsList_Click(sender, e);
 				break;
 			case Keys.O:
 				if(e.Control && !e.Alt)
-					tsbnOpen_Click(sender, e);
+					this.tsbnOpen_Click(sender, e);
 				break;
 			case Keys.S:
 				if(e.Control && !e.Alt)
-					tsbnSave_Click(sender, e);
+					this.tsbnSave_Click(sender, e);
 				break;
 			case Keys.P:
 				if(e.Control && !e.Alt)
-					tsbnPrint_Click(sender, e);
+					this.tsbnPrint_Click(sender, e);
 				break;
 			case Keys.C:
 				if(e.Control && !e.Alt)
 				{
 					DataObjectSave obj = this.GetInfoCtrl<DataObjectSave>()
 						?? new DataObjectSave(this, graphView);
-					obj.SaveBitmatToClipboard();
+					obj.SaveBitmapToClipboard();
 				}
 				break;
 			default:
@@ -287,7 +317,7 @@ namespace Plugin.DependencyAnalyzer
 			tsbnForward.Enabled = graphView.ForwardEnabled;
 
 			tsbnSave.Enabled = graphView.Graph != null;
-			if(bnGraphAsList.Checked)
+			if(bnGraphAsList.Checked && graphView.Graph != null)
 				lvNodes.RenderAssembliesInList(this.Plugin.Settings, graphView.Graph.Nodes);
 		}
 
@@ -297,10 +327,10 @@ namespace Plugin.DependencyAnalyzer
 
 			if(this._selectedObject != null)
 			{
-				if(this._selectedObject is Edge)
-					(this._selectedObject as Edge).Attr = this._selectedObjectAttr as EdgeAttr;
-				else if(this._selectedObject is Node)
-					(this._selectedObject as Node).Attr = this._selectedObjectAttr as NodeAttr;
+				if(this._selectedObject is Edge edge)
+					edge.Attr = this._selectedObjectAttr as EdgeAttr;
+				else if(this._selectedObject is Node node)
+					node.Attr = this._selectedObjectAttr as NodeAttr;
 
 				this._selectedObject = null;
 			}
@@ -323,7 +353,7 @@ namespace Plugin.DependencyAnalyzer
 					tipText.Add(libSource.Assembly == null ? libSource.Name : libSource.Assembly.FullName);
 					tipText.Add(libTarget.Assembly == null ? libTarget.Name : libTarget.Assembly.FullName);
 
-				} else if(node != null && node.IsVisible)
+				} else if(node?.IsVisible == true)
 				{
 					this._selectedObjectAttr = node.Attr.Clone();
 					node.Attr.Color = Color.Magenta;
@@ -360,92 +390,138 @@ namespace Plugin.DependencyAnalyzer
 				this.Settings.GraphFilePath = filePath;
 			}
 
-			LibrarySearchType selectedSearch = this.Plugin.Settings.SearchType;
-			foreach(ToolStripMenuItem item in ddlSearchType.DropDownItems)
+			ddlSearchType.SearchType = this.Plugin.Settings.SearchType;
+
+			tsMain.Enabled = false;
+			this.Cursor = Cursors.WaitCursor;
+			this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Loading...");
+
+			_loadLibraryElapsed.Restart();
+			bwAnalyzePeFile.RunWorkerAsync();
+		}
+
+		private void bwAnalyzePeFile_DoWork(Object sender, DoWorkEventArgs e)
+		{
+			Graph graph;
+			LibraryAnalyzer analyzer;
+			switch(Path.GetExtension(this.Settings.GraphFilePath).ToLowerInvariant())
 			{
-				LibrarySearchType type = (LibrarySearchType)item.Tag;
-				item.Checked = (selectedSearch & type) == type;
+			case ".msagl":
+				graph = Graph.Read(this.Settings.GraphFilePath);
+				analyzer = new LibraryAnalyzer(this.Plugin.Trace, (String)graph.UserData, this.Plugin.Settings.SearchType);//Must be a path to the original assembly
+				break;
+			//case ".dll":
+			//case ".exe":
+			default:
+				graph = new Graph(this.Settings.GraphFilePath);
+				analyzer = new LibraryAnalyzer(this.Plugin.Trace, this.Settings.GraphFilePath, this.Plugin.Settings.SearchType);
+
+				this._uniqueEdges = new HashSet<String>();
+				this.RenderAssembliesInGraph(analyzer.StartLibrary, graph);
+				List<Node> nodesToRemove = new List<Node>();
+				if((this.Plugin.Settings.SearchType & LibrarySearchType.UnreferencedInFolder) == LibrarySearchType.UnreferencedInFolder)
+					foreach(Library library in analyzer.FindUnreferencedLibraries())
+						this.RenderAssembliesInGraph(library, graph);
+				if((this.Plugin.Settings.SearchType & LibrarySearchType.RemoveNotFound) == LibrarySearchType.RemoveNotFound)
+				{
+					var notFoundColor = PluginSettings.Convert(this.Plugin.Settings.LibraryNotFoundColor);
+					var nodes = graph.Nodes.ToArray();
+					foreach(var node in nodes)
+					{
+						var edges = node.InEdges.ToArray();
+						if(edges.Length > 0 && Array.TrueForAll(edges, edge => edge.Attr.Color == notFoundColor))
+							nodesToRemove.Add(node);
+					}
+				}
+
+				foreach(String nodeLabel in this.Settings.RemovedNodes ?? Array.Empty<String>())
+				{
+					var node = graph.Nodes.FirstOrDefault(n => n.LabelText == nodeLabel);
+					if(node != null)
+						nodesToRemove.Add(node);
+				}
+
+				foreach(var node in nodesToRemove)
+					try
+					{
+						graph.RemoveNode(node);
+					} catch(NullReferenceException)
+					{
+						/*   at Microsoft.Msagl.Drawing.Graph.RemoveNode(Node node)
+						   at Plugin.DependencyAnalyzer.DocumentDependencies.bwAnalyzePeFile_DoWork(Object sender, DoWorkEventArgs e) in \Plugin.DependencyAnalyzer\Plugin.DependencyAnalyzer\DocumentDependencies.cs:line 501*/
+					}
+				this._uniqueEdges = null;
+				break;
 			}
 
-			base.Cursor = Cursors.WaitCursor;
-			this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Loading...");
+			graph.UserData = analyzer;
+			e.Result = graph;
+		}
+
+		private void bwAnalyzePeFile_RunWorkerCompleted(Object sender, RunWorkerCompletedEventArgs e)
+		{
 			try
 			{
-				Graph graph;
-				LibraryAnalyzer analyzer;
-				Stopwatch sw = new Stopwatch();
-				sw.Start();
-				switch(Path.GetExtension(this.Settings.GraphFilePath).ToLowerInvariant())
-				{
-				case ".msagl":
-					graph = Graph.Read(this.Settings.GraphFilePath);
-					analyzer = new LibraryAnalyzer(this.Plugin.Trace, (String)graph.UserData, selectedSearch);//Must be path to the original assembly
-					break;
-				//case ".dll":
-				//case ".exe":
-				default:
-					graph = new Graph(this.Settings.GraphFilePath);
-					analyzer = new LibraryAnalyzer(this.Plugin.Trace, this.Settings.GraphFilePath, selectedSearch);
+				this._loadLibraryElapsed.Stop();
+				if(e.Cancelled) return;
 
-					this._uniqueEdges = new HashSet<String>();
-					this.RenderAssembliesInGraph(analyzer.StartLibrary, graph);
-					if((this.Plugin.Settings.SearchType & LibrarySearchType.UnreferencedInFolder) == LibrarySearchType.UnreferencedInFolder)
-						foreach(Library library in analyzer.FindUnreferencedLibraries())
-							this.RenderAssembliesInGraph(library, graph);
-					this._uniqueEdges = null;
-					break;
+				if(e.Error != null)
+				{
+					this.Plugin.Trace.TraceData(TraceEventType.Error, 1, e.Error);
+					this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Error");
+					return;
 				}
-				sw.Stop();
+
+				Graph graph = (Graph)e.Result;
+				LibraryAnalyzer analyzer = (LibraryAnalyzer)graph.UserData;
 
 				if(analyzer.StartLibrary.IsFound == false)
 				{
 					graph.UserData = null;
 					this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Error");
-					this.Plugin.Trace.TraceInformation("File {0} grapg NOT loaded in {1}. References: {2:N0}", this.Settings.GraphFilePath, sw.Elapsed, analyzer.KnownLibraries.Count);
+					this.Plugin.Trace.TraceInformation("File {0} graph NOT loaded in {1}. References: {2:N0}", this.Settings.GraphFilePath, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					graphView.Graph = null;
 				} else
 				{
-					graph.UserData = analyzer;
 					if(analyzer.StartLibrary.Assembly != null)
 					{
 						this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, analyzer.StartLibrary.Assembly.FullName);
-						this.Plugin.Trace.TraceInformation("Assembly {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Assembly.FullName, sw.Elapsed, analyzer.KnownLibraries.Count);
+						this.Plugin.Trace.TraceInformation("Assembly {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Assembly.FullName, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					} else
 					{
 						this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, analyzer.StartLibrary.ShowAsString());
-						this.Plugin.Trace.TraceInformation("Excutable {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Name, sw.Elapsed, analyzer.KnownLibraries.Count);
+						this.Plugin.Trace.TraceInformation("Executable {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Name, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					}
 
 					this._selectedObject = this._selectedObjectAttr = null;
 					this.Plugin.Settings.SetObjectData(graph.Attr);//Reflected Attribute properties
 					graphView.Graph = graph;
 				}
-
-				// Toggle controls
-				foreach(ToolStripItem item in tsMain.Items)
-					item.Enabled = true;
-
-				this.graphView_GraphChanged(this, EventArgs.Empty);
-				// Toggle controls
-			} catch(Exception exc)
-			{
-				this.Plugin.Trace.TraceData(TraceEventType.Error, 1, exc);
-				this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Error");
 			} finally
 			{
-				base.Cursor = Cursors.Default;
+				this.Cursor = Cursors.Default;
+				tsMain.Enabled = true;
 			}
 		}
 
-		private void ddlSearchType_CheckedChanged(Object sender, EventArgs e)
-		{
-			LibrarySearchType searchType = 0;
-			foreach(ToolStripMenuItem item in ddlSearchType.DropDownItems)
-				if(item.Checked)
-					searchType = searchType | ((LibrarySearchType)item.Tag);
+		private void ddlSearchType_OnSearchTypeCheckedChanged(Object sender, EventArgs e)
+			=> this.Plugin.Settings.SearchType = ddlSearchType.SearchType;
 
-			if(this.Plugin.Settings.SearchType != searchType)
-				this.Plugin.Settings.SearchType = searchType;
+		private void lvNodes_OnNodeVisibilityChanged(Object sender, NodeVisibilityChangedEventArgs e)
+		{
+			switch(e.Change)
+			{
+			case NodeVisibilityChangedEventArgs.ChangeType.Visibility:
+				graphView.Invalidate();
+				break;
+			case NodeVisibilityChangedEventArgs.ChangeType.Remove:
+				foreach(var node in e.Nodes)
+					this.RemoveNodeRecursive(node);
+				graphView.Invalidate();
+				break;
+			default:
+				throw new NotImplementedException();
+			}
 		}
 
 		private void tsbnOpen_Click(Object sender, EventArgs e)
@@ -533,9 +609,6 @@ namespace Plugin.DependencyAnalyzer
 				break;
 			}
 		}
-
-		private void lvNodes_OnNodeCheckedChanged(Object sender, EventArgs e)
-			=> graphView.Refresh();
 
 		private void SetInfoCtrl(Data.IDataObject dataObject)
 		{
@@ -646,6 +719,23 @@ namespace Plugin.DependencyAnalyzer
 					this._currentRecursiveLevel--;
 				}
 			}
+		}
+
+		private void RemoveNodeRecursive(Node parentNode)
+		{
+			foreach(var entity in graphView.Entities)
+				if(entity is IViewerNode node && node.Node == parentNode)
+				{
+					this.RemoveNode(node);
+					break;
+				}
+		}
+
+		private void RemoveNode(IViewerNode nodeToRemove)
+		{
+			graphView.RemoveNode(nodeToRemove, true);
+			lvNodes.RemoveAssemblyFromList(nodeToRemove.Node);
+			this.Settings.AddNodeToRemoved(nodeToRemove.Node.LabelText);
 		}
 	}
 }

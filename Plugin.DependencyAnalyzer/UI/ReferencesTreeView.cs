@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Reflection;
-using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using AlphaOmega.Debug;
 using AlphaOmega.Debug.CorDirectory.Meta;
@@ -110,8 +110,11 @@ namespace Plugin.DependencyAnalyzer.UI
 
 			public IEnumerable<DefinedType> ReverseHierarchy()
 			{
-				List<DefinedType> reverse = new List<DefinedType>();
-				reverse.Add(this);
+				List<DefinedType> reverse = new List<DefinedType>
+				{
+					this
+				};
+
 				DefinedType parent = this.ParentClass;
 				while(parent != null)
 				{
@@ -140,17 +143,17 @@ namespace Plugin.DependencyAnalyzer.UI
 			}
 		}
 
-		private Boolean _hilightReferencedMembers;
+		private Boolean _highlightReferencedMembers;
 		private Library _parentLibrary;
 
-		public Boolean HilightReferencedMembers
+		public Boolean HighlightReferencedMembers
 		{
-			get => this._hilightReferencedMembers;
+			get => this._highlightReferencedMembers;
 			set
 			{
-				this._hilightReferencedMembers = value;
+				this._highlightReferencedMembers = value;
 
-				if(this._hilightReferencedMembers)
+				if(this._highlightReferencedMembers)
 					this.ShowDefinedMembers(this.ParentLibrary);
 			}
 		}
@@ -161,7 +164,7 @@ namespace Plugin.DependencyAnalyzer.UI
 			set
 			{
 				this._parentLibrary = value;
-				if(this.HilightReferencedMembers)
+				if(this.HighlightReferencedMembers)
 					this.ShowDefinedMembers(value);
 			}
 		}
@@ -270,7 +273,7 @@ namespace Plugin.DependencyAnalyzer.UI
 							TreeNode found = FindNode(exportTable.Nodes, (node) => { return node.Text == map.ImportName; }).FirstOrDefault();
 							if(found == null && !map.ImportName.EndsWith("W"))//Trying to find Unicode alternative (MethodNameW)
 								found = FindNode(exportTable.Nodes, (node) => { return node.Text == map.ImportName + "W"; }).FirstOrDefault();
-							if(found == null && !map.ImportName.EndsWith("A"))//Trying to fing Asci alterntive (MethodNameA)
+							if(found == null && !map.ImportName.EndsWith("A"))//Trying to find Asci alternative (MethodNameA)
 								found = FindNode(exportTable.Nodes, (node) => { return node.Text == map.ImportName + "A"; }).FirstOrDefault();
 
 							String importName = found == null ? map.ImportName : found.Text;
@@ -295,7 +298,7 @@ namespace Plugin.DependencyAnalyzer.UI
 									if(func.Ordinal == module.Hint)
 									{
 										isFound = true;
-										HilightNode(nodeExportTable.Nodes, null, node, TreeImageType.Method);
+										HighlightNode(nodeExportTable.Nodes, null, node, TreeImageType.Method);
 										break;
 									}
 								}
@@ -419,7 +422,7 @@ namespace Plugin.DependencyAnalyzer.UI
 
 		private void ClearReferences(TreeNodeCollection nodes)
 		{
-			if(this.HilightReferencedMembers)
+			if(this.HighlightReferencedMembers)
 			{
 				for(Int32 loop = nodes.Count - 1; loop >= 0; loop--)
 				{
@@ -437,8 +440,8 @@ namespace Plugin.DependencyAnalyzer.UI
 		}
 
 		private TreeNode GetNode(TreeNodeCollection nodes, String text, TreeImageType image)
-			=> this.HilightReferencedMembers
-				? HilightNode(nodes, text, image)
+			=> this.HighlightReferencedMembers
+				? HighlightNode(nodes, text, image)
 				: GetOrAddNode(nodes, text, image);
 
 		private static TreeNode GetOrAddNode(TreeNodeCollection nodes, String text, TreeImageType image)
@@ -451,15 +454,15 @@ namespace Plugin.DependencyAnalyzer.UI
 			return result;
 		}
 
-		private static TreeNode HilightNode(TreeNodeCollection nodes, String text, TreeImageType image)
+		private static TreeNode HighlightNode(TreeNodeCollection nodes, String text, TreeImageType image)
 		{
 			foreach(TreeNode node in FindNode(nodes, (node) => { return node.Text == text; }))
-				return HilightNode(nodes, text, node, image);
+				return HighlightNode(nodes, text, node, image);
 
-			return HilightNode(nodes, text, null, image);
+			return HighlightNode(nodes, text, null, image);
 		}
 
-		private static TreeNode HilightNode(TreeNodeCollection nodes, String text, TreeNode node, TreeImageType image)
+		private static TreeNode HighlightNode(TreeNodeCollection nodes, String text, TreeNode node, TreeImageType image)
 		{
 			if(node == null)
 			{

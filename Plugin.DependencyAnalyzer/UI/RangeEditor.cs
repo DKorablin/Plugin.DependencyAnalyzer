@@ -6,11 +6,14 @@ using Plugin.DependencyAnalyzer.Data;
 
 namespace Plugin.DependencyAnalyzer.UI
 {
+	/// <summary>The UI type editor for ranged objects.</summary>
 	public class RangeEditor : UITypeEditor
 	{
+		/// <inheritdoc/>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
 			=> UITypeEditorEditStyle.DropDown;
 
+		/// <inheritdoc/>
 		public override Object EditValue(ITypeDescriptorContext context, IServiceProvider provider, Object value)
 		{
 			IWindowsFormsEditorService editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));

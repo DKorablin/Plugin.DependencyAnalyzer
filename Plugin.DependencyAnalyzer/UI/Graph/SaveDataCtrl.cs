@@ -13,6 +13,6 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 		}
 
 		public SaveDataCtrl()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 	}
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 using Plugin.DependencyAnalyzer;
@@ -47,7 +46,7 @@ namespace ExecInfo.Dal.Documentation
 		{
 			String publicKeyToken = assemblyName.GetPublicKeyTokenString();
 
-			BindingRedirect result = FindBinding(assemblyName.Name, publicKeyToken);
+			BindingRedirect result = this.FindBinding(assemblyName.Name, publicKeyToken);
 			return result;
 		}
 

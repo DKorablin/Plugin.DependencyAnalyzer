@@ -122,13 +122,13 @@
 			this.bnHilight.Name = "bnHilight";
 			this.bnHilight.Size = new System.Drawing.Size(29, 25);
 			this.bnHilight.Text = "Show all members and hilight used (Ctrl+H)";
-			this.bnHilight.CheckedChanged += new System.EventHandler(this.bnHilight_CheckedChanged);
+			this.bnHilight.CheckedChanged += new System.EventHandler(this.bnHighlight_CheckedChanged);
 			// 
 			// tvReferences
 			// 
 			this.tvReferences.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tvReferences.HideSelection = false;
-			this.tvReferences.HilightReferencedMembers = false;
+			this.tvReferences.HighlightReferencedMembers = false;
 			this.tvReferences.ImageIndex = 0;
 			this.tvReferences.ImageList = this.ilObjects;
 			this.tvReferences.Location = new System.Drawing.Point(0, 64);

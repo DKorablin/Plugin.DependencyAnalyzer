@@ -6,38 +6,38 @@ namespace Plugin.DependencyAnalyzer.Shared
 {
 	internal class NativeWrapper
 	{
-		/// <summary>Поиск файла</summary>
-		/// <param name="fileName">Наименование файла для поиска</param>
-		/// <returns>Путь к найденному файлу или null, если файл не найден</returns>
+		/// <summary>Search file</summary>
+		/// <param name="fileName">File name to search</param>
+		/// <returns>Path to the found file or null if the file is not found</returns>
 		public static String SearchPath(String fileName)
 		{
 			const Int32 MAX_PATH = 255;
-			Int32 bufferLenght=MAX_PATH;
-			String result = SearchPath(fileName, ref bufferLenght);
+			Int32 bufferLength=MAX_PATH;
+			String result = SearchPath(fileName, ref bufferLength);
 
-			if(result == null && bufferLenght > MAX_PATH)
-				result = SearchPath(fileName, ref bufferLenght);
+			if(result == null && bufferLength > MAX_PATH)
+				result = SearchPath(fileName, ref bufferLength);
 
 			return result;
 		}
 
-		/// <summary>Поиск файла</summary>
-		/// <param name="fileName">Название файла для поиска</param>
-		/// <param name="bufferLenght">Размер буфера</param>
-		/// <returns>Путь к файлу или null, если файл не найден</returns>
-		private static String SearchPath(String fileName, ref Int32 bufferLenght)
+		/// <summary>Search file</summary>
+		/// <param name="fileName">File name to search for</param>
+		/// <param name="bufferLength">Buffer size</param>
+		/// <returns>Path to file or null if file not found</returns>
+		private static String SearchPath(String fileName, ref Int32 bufferLength)
 		{
-			StringBuilder buffer = new StringBuilder(bufferLenght);
+			StringBuilder buffer = new StringBuilder(bufferLength);
 			IntPtr dummy = new IntPtr();
 
 			UInt32 hResult = Native.SearchPath(null, fileName, null, buffer.Capacity, buffer, out dummy);
 			if(hResult == 0)//Not found
 			{
-				bufferLenght = 0;
+				bufferLength = 0;
 				return null;
-			} else if(hResult > bufferLenght)
+			} else if(hResult > bufferLength)
 			{
-				bufferLenght = (Int32)hResult;
+				bufferLength = (Int32)hResult;
 				return null;
 			} else
 				return buffer.ToString();

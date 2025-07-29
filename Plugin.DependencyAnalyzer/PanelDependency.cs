@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
 using Plugin.DependencyAnalyzer.Data;
@@ -11,6 +12,8 @@ namespace Plugin.DependencyAnalyzer
 {
 	internal partial class PanelDependency : UserControl, IPluginSettings<PanelDependencySettings>
 	{
+		private readonly Stopwatch _loadLibraryElapsed = new Stopwatch();
+
 		private PanelDependencySettings _settings;
 
 		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
@@ -22,19 +25,19 @@ namespace Plugin.DependencyAnalyzer
 		public PanelDependencySettings Settings => this._settings ?? (this._settings = new PanelDependencySettings());
 
 		public PanelDependency()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 
 		protected override void OnCreateControl()
 		{
 			this.Window.SetTabPicture(Resources.iPuzzle);
-			this.Window.Closed += Window_Closed;
-			this.Plugin.OnDependenciesChanged += Plugin_OnDependenciesChanged;
+			this.Window.Closed += this.Window_Closed;
+			this.Plugin.OnDependenciesChanged += this.Plugin_OnDependenciesChanged;
 			base.OnCreateControl();
 
 			//if(this.Settings.GraphFilePath != null)//Nope. It wil not be called. Because of undefined load queue
-			//	return;//If it's a graph invocation then all details will be sended in the event. See: CallDependencyInfo
+			//	return;//If it's a graph invocation then all details will be sent in the event. See: CallDependencyInfo
 
-			this.SetInfoCtrl();
+			this.CreateInfoCtrl();
 		}
 
 		private void Plugin_OnDependenciesChanged(Object sender, EventArgsBase e)
@@ -44,7 +47,8 @@ namespace Plugin.DependencyAnalyzer
 				switch(e.Type)
 				{
 				case EventType.Info:
-					this.SetInfoCtrl(e.Data);
+					this.Settings.ConsumeDataObject(e.Data);
+					this.ShowInfoCtrl(e.Data);
 					break;
 				case EventType.Close:
 					this.Window.Close();
@@ -56,13 +60,66 @@ namespace Plugin.DependencyAnalyzer
 		}
 
 		private void Window_Closed(Object sender, EventArgs e)
-			=> this.Plugin.OnDependenciesChanged -= Plugin_OnDependenciesChanged;
+			=> this.Plugin.OnDependenciesChanged -= this.Plugin_OnDependenciesChanged;
 
-		private void SetInfoCtrl()
+		private void bwLoadDataObjectFromLibrary_DoWork(Object sender, DoWorkEventArgs e)
+		{
+			Library lib = (Library)e.Argument;
+
+			Data.IDataObject dataObject;
+			switch(this.Settings.ControlType)
+			{
+			case PanelDependencySettings.LibraryControlType.Info:
+				dataObject = new DataObjectSelected(lib);
+				break;
+			case PanelDependencySettings.LibraryControlType.References:
+				dataObject = new DataObjectReferences(lib);
+				break;
+			case PanelDependencySettings.LibraryControlType.Analyze:
+				LibraryAnalyzer analyzer;
+				if(this.Settings.GraphFilePath != null)
+					analyzer = new LibraryAnalyzer(this.Plugin.Trace, this.Settings.GraphFilePath, this.Plugin.Settings.SearchType);
+				else
+				{
+					analyzer = new LibraryAnalyzer(this.Plugin.Trace, lib, this.Plugin.Settings.SearchType);
+					analyzer.FindAllLibrariesInCurrentFolder();//This is used to cache all libraries in current folder
+				}
+				dataObject = new DataObjectAnalyze(analyzer, lib);
+				break;
+			default:
+				throw new NotImplementedException();
+			}
+
+			e.Result = dataObject;
+		}
+
+		private void bwLoadDataObjectFromLibrary_RunWorkerCompleted(Object sender, RunWorkerCompletedEventArgs e)
+		{
+			try
+			{
+				this._loadLibraryElapsed.Stop();
+				if(e.Cancelled) return;
+
+				if(e.Error != null)
+				{
+					this.Plugin.Trace.TraceData(TraceEventType.Error, 1, e.Error);
+					return;
+				}
+
+				Data.IDataObject dataObject = (Data.IDataObject)e.Result;
+				this.ShowInfoCtrl(dataObject);
+			} finally
+			{
+				this.Cursor = Cursors.Default;
+				this.Plugin.Trace.TraceInformation("Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, this._loadLibraryElapsed.Elapsed);
+			}
+		}
+
+		private void CreateInfoCtrl()
 		{
 			if(this.Settings.AssemblyPath == null || !System.IO.File.Exists(this.Settings.AssemblyPath))
 			{
-				String filePath = PluginWindows.OpenAnalyseFilePath();
+				String filePath = PluginWindows.OpenAnalyzeFilePath();
 				if(filePath == null)
 				{
 					this.Window.Close();
@@ -74,59 +131,26 @@ namespace Plugin.DependencyAnalyzer
 			Library lib = Library.Load(this.Settings.AssemblyPath, false);
 			if(lib != null)
 			{
-				Data.IDataObject dataObject;
-				switch(this.Settings.ControlType)
-				{
-				case PanelDependencySettings.LibraryControlType.Info:
-					dataObject = new DataObjectSelected(lib);
-					break;
-				case PanelDependencySettings.LibraryControlType.References:
-					dataObject = new DataObjectReferences(lib);
-					break;
-				case PanelDependencySettings.LibraryControlType.Analyze:
-					LibraryAnalyzer analyzer;
-					if(this.Settings.GraphFilePath != null)
-						analyzer = new LibraryAnalyzer(this.Plugin.Trace, this.Settings.GraphFilePath, this.Plugin.Settings.SearchType);
-					else
-					{
-						analyzer = new LibraryAnalyzer(this.Plugin.Trace, lib, this.Plugin.Settings.SearchType);
-						analyzer.FindAllLibrariesInCurrentFolder();//This is used to cache all libraries in current folder
-					}
-					dataObject = new DataObjectAnalyze(analyzer, lib);
-					break;
-				default:
-					throw new NotImplementedException();
-				}
-
-				this.SetInfoCtrl(dataObject);
+				this.Window.Caption = "Loading...";
+				this.Cursor = Cursors.WaitCursor;
+				this._loadLibraryElapsed.Restart();
+				bwLoadDataObjectFromLibrary.RunWorkerAsync(lib);
 			}
 		}
 
-		private void SetInfoCtrl(Data.IDataObject dataObject)
+		private void ShowInfoCtrl(Data.IDataObject dataObject)
 		{
 			this.Window.Caption = dataObject.Name;
 
-			Stopwatch sw = new Stopwatch();
-			sw.Start();
 			if(dataObject is DataObjectSave save)
 				this.EnsureInfoCtrl<SaveDataCtrl>().SelectedObject = save;
 			else if(dataObject is DataObjectSelected selectedPe)
-			{
-				this.Settings.ControlType = PanelDependencySettings.LibraryControlType.Info;
-				this.Settings.AssemblyPath = selectedPe.Library.Path;
 				this.EnsureInfoCtrl<SelectedPECtrl>().SelectedObject = selectedPe;
-			}else if(dataObject is DataObjectReferences references)
-			{
-				this.Settings.ControlType = PanelDependencySettings.LibraryControlType.References;
-				this.Settings.AssemblyPath = references.Library.Path;
+			else if(dataObject is DataObjectReferences references)
 				this.EnsureInfoCtrl<ReferencesCtrl>().SelectedObject = references;
-			}
 			else if(dataObject is DataObjectAnalyze analyze)
-			{
-				this.Settings.ControlType = PanelDependencySettings.LibraryControlType.Analyze;
-				this.Settings.AssemblyPath = analyze.Library.Path;
 				this.EnsureInfoCtrl<AnalyzeCtrl>().SelectedObject = analyze;
-			} else if(dataObject == null)
+			else if(dataObject == null)
 			{
 				Control ctrlChk = base.Controls.Count == 0
 					? null
@@ -140,11 +164,6 @@ namespace Plugin.DependencyAnalyzer
 
 			if(dataObject == null)
 				this.Window.Close();
-			else
-			{
-				sw.Stop();
-				this.Plugin.Trace.TraceInformation("Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, sw.Elapsed);
-			}
 		}
 
 		private T GetInfoCtrl<T>() where T : class, Data.IDataObject

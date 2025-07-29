@@ -8,8 +8,8 @@
 		<readme>docs\README.md</readme>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<projectUrl>https://dkorablin.ru/project/Default.aspx?File=121</projectUrl>
-		<repository type="git" url="https://github.com/DKorablin/Plugin.Configuration" />
-		<description>Configuration plugin for SAL Windows hosts applications</description>
+		<repository type="git" url="https://github.com/DKorablin/Plugin.DependencyAnalyzer" />
+		<description>Analyzer for PE files to show referenced assemblies and PE files</description>
 		<releaseNotes></releaseNotes>
 		<copyright>Danila Korablin</copyright>
 		<tags>SAL,Plugin,CLI,Assembly,PE</tags>

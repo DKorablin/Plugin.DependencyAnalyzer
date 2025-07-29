@@ -1,4 +1,5 @@
-﻿using Plugin.DependencyAnalyzer.UI;
+﻿using System.ComponentModel;
+using Plugin.DependencyAnalyzer.UI;
 
 namespace Plugin.DependencyAnalyzer
 {
@@ -41,7 +42,7 @@ namespace Plugin.DependencyAnalyzer
 			this.tsbnOpen = new System.Windows.Forms.ToolStripButton();
 			this.tsbnPrint = new System.Windows.Forms.ToolStripButton();
 			this.tsbnSave = new System.Windows.Forms.ToolStripButton();
-			this.ddlSearchType = new System.Windows.Forms.ToolStripDropDownButton();
+			this.ddlSearchType = new LibrarySearchDropDownButton();
 			this.bnGraphAsList = new System.Windows.Forms.ToolStripButton();
 			this.tsbnZoomIn = new System.Windows.Forms.ToolStripButton();
 			this.tsbnZoomOut = new System.Windows.Forms.ToolStripButton();
@@ -65,6 +66,8 @@ namespace Plugin.DependencyAnalyzer
 			this.lvNodes = new Plugin.DependencyAnalyzer.UI.ListViewLibraryNodes();
 			this.cmsListNodes = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.tsmiListNodes_Focus = new System.Windows.Forms.ToolStripMenuItem();
+			this.tsmiListNodes_OpenLocation = new System.Windows.Forms.ToolStripMenuItem();
+			this.bwAnalyzePeFile = new System.ComponentModel.BackgroundWorker();
 			tsMainSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			tsMainSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			tsMainSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -160,7 +163,7 @@ namespace Plugin.DependencyAnalyzer
 			this.ddlSearchType.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.ddlSearchType.Name = "ddlSearchType";
 			this.ddlSearchType.Size = new System.Drawing.Size(34, 28);
-			this.ddlSearchType.Text = "Search Type";
+			this.ddlSearchType.OnSearchTypeCheckedChanged += this.ddlSearchType_OnSearchTypeCheckedChanged;
 			// 
 			// bnGraphAsList
 			// 
@@ -374,8 +377,7 @@ namespace Plugin.DependencyAnalyzer
 			// splitHorizontal
 			// 
 			this.splitHorizontal.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitHorizontal.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-			this.splitHorizontal.Location = new System.Drawing.Point(0, 31);
+			this.splitHorizontal.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
 			this.splitHorizontal.Margin = new System.Windows.Forms.Padding(4);
 			this.splitHorizontal.Name = "splitHorizontal";
 			this.splitHorizontal.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -387,9 +389,6 @@ namespace Plugin.DependencyAnalyzer
 			// splitHorizontal.Panel2
 			// 
 			this.splitHorizontal.Panel2.Controls.Add(this.lvNodes);
-			this.splitHorizontal.Size = new System.Drawing.Size(433, 162);
-			this.splitHorizontal.SplitterDistance = 47;
-			this.splitHorizontal.SplitterWidth = 5;
 			this.splitHorizontal.TabIndex = 2;
 			this.splitHorizontal.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.splitHorizontal_MouseDoubleClick);
 			// 
@@ -415,14 +414,17 @@ namespace Plugin.DependencyAnalyzer
 			this.lvNodes.TabIndex = 0;
 			this.lvNodes.UseCompatibleStateImageBehavior = false;
 			this.lvNodes.View = System.Windows.Forms.View.Details;
+			this.lvNodes.OnNodeVisibilityChanged += this.lvNodes_OnNodeVisibilityChanged;
 			// 
 			// cmsListNodes
 			// 
 			this.cmsListNodes.ImageScalingSize = new System.Drawing.Size(20, 20);
 			this.cmsListNodes.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiListNodes_Focus});
+            this.tsmiListNodes_Focus,
+			this.tsmiListNodes_OpenLocation});
 			this.cmsListNodes.Name = "cmsListNodes";
 			this.cmsListNodes.Size = new System.Drawing.Size(116, 28);
+			this.cmsListNodes.Opening += this.cmsListNodes_Opening;
 			this.cmsListNodes.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.cmsListNodes_ItemClicked);
 			// 
 			// tsmiListNodes_Focus
@@ -430,6 +432,18 @@ namespace Plugin.DependencyAnalyzer
 			this.tsmiListNodes_Focus.Name = "tsmiListNodes_Focus";
 			this.tsmiListNodes_Focus.Size = new System.Drawing.Size(115, 24);
 			this.tsmiListNodes_Focus.Text = "&Focus";
+			// 
+			// tsmiListNodes_OpenLocation
+			// 
+			this.tsmiListNodes_OpenLocation.Name = "tsmiListNodes_OpenLocation";
+			this.tsmiListNodes_OpenLocation.Size = new System.Drawing.Size(115, 24);
+			this.tsmiListNodes_OpenLocation.Text = "Show in &Folder";
+			//
+			// bwAnalyzePeFile
+			//
+			this.bwAnalyzePeFile.WorkerSupportsCancellation = true;
+			this.bwAnalyzePeFile.DoWork += this.bwAnalyzePeFile_DoWork;
+			this.bwAnalyzePeFile.RunWorkerCompleted += this.bwAnalyzePeFile_RunWorkerCompleted;
 			// 
 			// DocumentDependencies
 			// 
@@ -454,12 +468,6 @@ namespace Plugin.DependencyAnalyzer
 			this.cmsListNodes.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
-
-		}
-
-		private void LvNodes_OnNodeCheckedChanged(object sender, System.Windows.Forms.ItemCheckedEventArgs e)
-		{
-			throw new System.NotImplementedException();
 		}
 
 		#endregion
@@ -483,7 +491,7 @@ namespace Plugin.DependencyAnalyzer
 		private System.Windows.Forms.ToolStripMenuItem tsmiGraphNodeRemove;
 		private System.Windows.Forms.ToolStripMenuItem tsmiGraphNodeInfo;
 		private System.Windows.Forms.ToolStripMenuItem tsmiGraphEdgeAnalyze;
-		private System.Windows.Forms.ToolStripDropDownButton ddlSearchType;
+		private LibrarySearchDropDownButton ddlSearchType;
 		private System.Windows.Forms.ToolStripMenuItem tsmiGraphDependencies;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem tsmiGraphOpenLocation;
@@ -492,5 +500,7 @@ namespace Plugin.DependencyAnalyzer
 		private System.Windows.Forms.ToolStripButton bnGraphAsList;
 		private System.Windows.Forms.ContextMenuStrip cmsListNodes;
 		private System.Windows.Forms.ToolStripMenuItem tsmiListNodes_Focus;
+		private System.Windows.Forms.ToolStripMenuItem tsmiListNodes_OpenLocation;
+		private System.ComponentModel.BackgroundWorker bwAnalyzePeFile;
 	}
 }

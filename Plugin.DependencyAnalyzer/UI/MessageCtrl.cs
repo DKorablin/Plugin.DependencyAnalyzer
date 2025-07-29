@@ -17,7 +17,7 @@ namespace Plugin.DependencyAnalyzer.UI
 
 		public MessageCtrl()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
 			this.Visible = false;
 		}
 

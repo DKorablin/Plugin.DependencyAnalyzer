@@ -13,15 +13,15 @@ namespace Plugin.DependencyAnalyzer.UI
 		public RangeEditorCtrl(DataObjectSave ctrlMain)
 		{
 			this._ctrlMain = ctrlMain;
-			InitializeComponent();
+			this.InitializeComponent();
 			tbScale.Value = this.ReverseConvert(this._ctrlMain.ImageScale);
 			this.SetScaleLabelTexts();
 		}
 
 		private void imageScale_ValueChanged(Object sender, EventArgs e)
 		{
-			Double a = Convert(tbScale.Value);
-			Int32 b = ReverseConvert(a);
+			Double a = this.Convert(tbScale.Value);
+			Int32 b = this.ReverseConvert(a);
 			if(b != tbScale.Value)
 				throw new InvalidOperationException();
 
@@ -41,7 +41,7 @@ namespace Plugin.DependencyAnalyzer.UI
 		{
 			Double scale = this.Value;
 			System.Drawing.Size size = this._ctrlMain.GetScale(scale);
-			ttMain.SetToolTip(tbScale, String.Format("Image scale is {0}", scale));
+			ttMain.SetToolTip(tbScale, $"Image scale is {scale}");
 
 			lblImageSize.Text = String.Join(" x ", size.Width, size.Height);
 		}

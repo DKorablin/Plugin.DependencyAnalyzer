@@ -53,6 +53,10 @@ namespace Plugin.DependencyAnalyzer.Data
 			set => this._reference = value;
 		}
 
+		/// <summary>Load PE file for analyzing.</summary>
+		/// <param name="filePath">The file path to file to load from.</param>
+		/// <param name="isFromGac">PE file stored in shared location.</param>
+		/// <returns>Loaded file or null if PE file not found</returns>
 		public static Library Load(String filePath, Boolean isFromGac)
 		{
 			using(PEFile file = new PEFile(filePath, StreamLoader.FromFile(filePath)))
@@ -69,6 +73,10 @@ namespace Plugin.DependencyAnalyzer.Data
 			: this(path, name, version, null, false)
 		{ }
 
+		/// <summary>Create instance iff library analyzer class with required parameters.</summary>
+		/// <param name="file">The loaded PE file information.</param>
+		/// <param name="isFromGac">File was loaded from shared location (All dependencies will be loaded from shared location)</param>
+		/// <exception cref="ArgumentException"></exception>
 		public Library(PEFile file, Boolean isFromGac)
 		{
 			if(!file.Header.IsValid)
@@ -80,7 +88,7 @@ namespace Plugin.DependencyAnalyzer.Data
 			AssemblyName assembly = null;
 
 			if(file.ComDescriptor == null || file.ComDescriptor.IsEmpty
-				|| file.ComDescriptor.MetaData.StreamTables.Assembly.Table.RowsCount == 0)//Есть сборки без Managed Code: C:\Windows\Microsoft.NET\assembly\GAC_32\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.Wrapper.dll
+				|| file.ComDescriptor.MetaData.StreamTables.Assembly.Table.RowsCount == 0)//There are assemblies without Managed Code: C:\Windows\Microsoft.NET\assembly\GAC_32\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.Wrapper.dll
 			{//Native assembly
 				ResourceVersion resVersion = file.Resource.GetVersion();
 
@@ -120,8 +128,8 @@ namespace Plugin.DependencyAnalyzer.Data
 		public PEFile OpenPE()
 			=> new PEFile(this.Path, StreamLoader.FromFile(this.Path));
 
-		/// <summary>Сериализационный конструктор</summary>
-		/// <param name="info">Информция по сериализации</param>
+		/// <summary>Serialization constructor</summary>
+		/// <param name="info">Serialization Information</param>
 		/// <param name="context">Stream</param>
 		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
 		private Library(SerializationInfo info, StreamingContext context)
@@ -147,8 +155,8 @@ namespace Plugin.DependencyAnalyzer.Data
 				}
 		}
 
-		/// <summary>Запись в сериализованный поток элементов коллекции под определённым идентификатором</summary>
-		/// <param name="info">Информация по сериализации</param>
+		/// <summary>Write to a serialized stream the elements of a collection under a specific identifier</summary>
+		/// <param name="info">Serialization Information</param>
 		/// <param name="context">Stream</param>
 		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -184,8 +192,11 @@ namespace Plugin.DependencyAnalyzer.Data
 			return null;
 		}
 
+		/// <summary>Compare 2 types of PE file information objects</summary>
+		/// <param name="asmName">The assembly information to compare with current PE files loaded inside current analyzer</param>
+		/// <returns>Objects are contains the same PE file</returns>
 		public Boolean Equals(AssemblyName asmName)
-		{//TODO: Add PublicKeyToken && not nessesary Version equality if PKT is equals
+		{//TODO: Add PublicKeyToken && not necessary Version equality if PKT is equals
 			if(this.Name == asmName.Name)
 			{
 				//This is added if we found assembly with the same name and different version in current folder
@@ -197,14 +208,21 @@ namespace Plugin.DependencyAnalyzer.Data
 			return false;
 		}
 
+		/// <summary>Compare 2 types of PE file information objects</summary>
+		/// <param name="name">The name of PE file</param>
+		/// <param name="version">The version of PE file</param>
+		/// <returns>Objects are equal</returns>
 		public Boolean Equals(String name, Version version)
 			=> this.Name == name && this.Version == version;
 
+		/// <summary>Compare 2 type of PE analyzer files</summary>
+		/// <param name="lib">Different instance of PE file analyzers.</param>
+		/// <returns>Objects are equal</returns>
 		public Boolean Equals(Library lib)
 			=> this.Name == lib.Name && this.Version == lib.Version;
 
 		/// <summary>Show visually string representation of the library (I don't want to override default ToString method)</summary>
-		/// <returns></returns>
+		/// <returns>Show version of currently loaded PE file as string.</returns>
 		public String ShowAsString()
 			=> this.Name + " Version=" + this.Version;
 	}

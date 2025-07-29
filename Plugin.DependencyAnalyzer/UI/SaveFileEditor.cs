@@ -7,11 +7,14 @@ using Plugin.DependencyAnalyzer.Data;
 
 namespace Plugin.DependencyAnalyzer.UI
 {
+	/// <summary>The UI editor control for save file dialog.</summary>
 	public class SaveFileEditor : UITypeEditor
 	{
+		/// <inheritdoc/>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
 			=> UITypeEditorEditStyle.Modal;
 
+		/// <inheritdoc/>
 		public override Object EditValue(ITypeDescriptorContext context, IServiceProvider provider, Object value)
 		{
 			if(context == null || context.Instance == null || provider == null)
@@ -34,7 +37,7 @@ namespace Plugin.DependencyAnalyzer.UI
 				Title = "Save graph",
 			})
 				if(dlg.ShowDialog() == DialogResult.OK)
-					obj.FilePath = dlg.FileName;//HACK: Если путь не изменился, то PropertyGrid не будет вызывать set метод
+					obj.FilePath = dlg.FileName;//HACK: If the path has not changed, the PropertyGrid will not call the set method.
 			return null;
 		}
 	}

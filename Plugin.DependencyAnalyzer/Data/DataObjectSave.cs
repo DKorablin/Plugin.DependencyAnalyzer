@@ -94,7 +94,7 @@ namespace Plugin.DependencyAnalyzer.Data
 
 		[Editor(typeof(SaveFileEditor), typeof(UITypeEditor))]
 		[DisplayName("File path")]
-		[Description("File path to save result image. Fter selection file will be saved")]
+		[Description("File path to save result image. After selection file will be saved")]
 		public String FilePath
 		{
 			get => this._filePath;
@@ -142,7 +142,7 @@ namespace Plugin.DependencyAnalyzer.Data
 			ImageFormatType formatType = this.ImageFormat;
 			switch(formatType)
 			{
-			case ImageFormatType.Graph://Записываем в UserData источник бинарника, ибо Object не сериализуется. TODO: Либо оформить LibraryAnalyzer->SerializableAttribute
+			case ImageFormatType.Graph://We write the binary source to UserData, because Object is not serialized. TODO: Either issue LibraryAnalyzer->SerializableAttribute
 				LibraryAnalyzer analyzer = (LibraryAnalyzer)this._control.Graph.UserData;
 					this._control.Graph.UserData = analyzer.StartLibrary.Path;
 					this._control.Graph.Write(this.FilePath);
@@ -236,8 +236,8 @@ namespace Plugin.DependencyAnalyzer.Data
 				}
 		}
 
-		/// <summary>Сохранить картинку в буфер обмена</summary>
-		public void SaveBitmatToClipboard()
+		/// <summary>Save image to clipboard</summary>
+		public void SaveBitmapToClipboard()
 		{
 			Size size = this.GetScale();
 			using(Bitmap bitmap = new Bitmap(size.Width, size.Height, this.Format))

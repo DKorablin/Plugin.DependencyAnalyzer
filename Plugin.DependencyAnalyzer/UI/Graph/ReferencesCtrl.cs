@@ -42,7 +42,7 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 		}
 
 		public ReferencesCtrl()
-			=> InitializeComponent();
+			=> this.InitializeComponent();
 
 		private void ShowReferences(Library lib)
 		{
@@ -63,36 +63,36 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 						var metaData = file.ComDescriptor.MetaData;
 						StreamTables tables = metaData.StreamTables;
 						foreach(var assembly in tables.AssemblyRef)
-							itemsToAdd.Add(CreateItem("Assembly Reference", assembly.AssemblyName.FullName));
+							itemsToAdd.Add(this.CreateItem("Assembly Reference", assembly.AssemblyName.FullName));
 
 						foreach(var module in tables.ModuleRef)
-							itemsToAdd.Add(CreateItem("Module Reference", module.Name));
+							itemsToAdd.Add(this.CreateItem("Module Reference", module.Name));
 
 						if(constRegex != null)
 						{
 							foreach(String str in metaData.StringHeap.Data)
 								if(constRegex.IsMatch(str))
-									itemsToAdd.Add(CreateItem(constRegex.ToString(), str));
+									itemsToAdd.Add(this.CreateItem(constRegex.ToString(), str));
 							foreach(var str in metaData.USHeap.GetDataString())
 								if(constRegex.IsMatch(str.Value))
-									itemsToAdd.Add(CreateItem(constRegex.ToString(), str.Value));
+									itemsToAdd.Add(this.CreateItem(constRegex.ToString(), str.Value));
 							foreach(var constant in tables.Constant)
 								if(constant.Type == Cor.ELEMENT_TYPE.STRING && constRegex.IsMatch((String)constant.ValueTyped))
-									itemsToAdd.Add(CreateItem(constRegex.ToString(), (String)constant.ValueTyped));
+									itemsToAdd.Add(this.CreateItem(constRegex.ToString(), (String)constant.ValueTyped));
 						}
 					}
 
 					if(file.Import?.IsEmpty == false)
 					{
 						foreach(AlphaOmega.Debug.NTDirectory.ImportModule module in file.Import)
-							itemsToAdd.Add(CreateItem("Module Reference", module.ModuleName));
+							itemsToAdd.Add(this.CreateItem("Module Reference", module.ModuleName));
 					}
 					if(constRegex != null && file.Resource?.IsEmpty == false)
 					{
 						foreach(var rt_strings in file.Resource.GetStrings())
 							foreach(var str in rt_strings)
 								if(constRegex.IsMatch(str.Value))
-									itemsToAdd.Add(CreateItem(constRegex.ToString(), str.Value));
+									itemsToAdd.Add(this.CreateItem(constRegex.ToString(), str.Value));
 					}
 
 					lvLibraries.Items.AddRange(itemsToAdd.ToArray());
@@ -111,10 +111,10 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 		{
 			ListViewItem result = new ListViewItem()
 			{
-				Group = GetGroup(groupName),
+				Group = this.GetGroup(groupName),
 			};
 
-			String[] subItems = Array.ConvertAll<String, String>(new String[lvLibraries.Columns.Count], delegate (String a) { return String.Empty; });
+			String[] subItems = Array.ConvertAll(new String[lvLibraries.Columns.Count], a => String.Empty);
 			result.SubItems.AddRange(subItems);
 
 			result.SubItems[colName.Index].Text = name;
