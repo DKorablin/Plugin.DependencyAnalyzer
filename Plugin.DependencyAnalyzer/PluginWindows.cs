@@ -61,13 +61,6 @@ namespace Plugin.DependencyAnalyzer
 
 		Boolean IPlugin.OnConnection(ConnectMode mode)
 		{
-			/*IHostWindows host = this.HostWindows;
-			if(host == null)
-			{
-				this.Trace.TraceEvent(TraceEventType.Error, 10, "Plugin {0} requires {1}", this, typeof(IHostWindows));
-				return false;
-			}*/
-
 			IMenuItem menuView = this._hostWindows.MainMenu.FindMenuItem("View");
 			if(menuView == null)
 			{
@@ -122,12 +115,27 @@ namespace Plugin.DependencyAnalyzer
 		{
 			if(isOpen)
 			{
-				var settings = new PanelDependencySettings(data)
+				_ = System.Threading.Tasks.Task.Factory.StartNew(() =>
 				{
-					GraphFilePath = document.Settings.GraphFilePath,
-				};
-				this.CreateWindow<PanelDependency, PanelDependencySettings>(settings);
+					var settings = new PanelDependencySettings(data)
+					{
+						GraphFilePath = document.Settings.GraphFilePath,
+					};
+					this.CreateWindow<PanelDependency, PanelDependencySettings>(settings);
+				});
 			}
+		}
+
+		internal void CallDependenciesChanged(DocumentDependencies document, EventType eventType,Data.IDataObject data)
+		{
+			EventArgsBase args = new EventArgsBase()
+			{
+				GraphFilePath = document.Settings.GraphFilePath,
+				Type = eventType,
+				Data = data,
+			};
+
+			_ = System.Threading.Tasks.Task.Factory.StartNew(() => this.OnDependenciesChanged?.Invoke(document, args));
 		}
 
 		internal static String OpenGraphFilePath()

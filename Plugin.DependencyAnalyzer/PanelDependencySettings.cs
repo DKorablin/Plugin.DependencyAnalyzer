@@ -26,6 +26,8 @@ namespace Plugin.DependencyAnalyzer
 		/// <summary>What control we need to show to the user</summary>
 		public LibraryControlType ControlType { get; set; } = LibraryControlType.Analyze;
 
+		/// <summary>Create empty instance of <see cref="PanelDependencySettings"/> for <see cref="PanelDependency"/> form.</summary>
+		/// <remarks>Used by host to restore forms state</remarks>
 		public PanelDependencySettings() { }
 
 		internal PanelDependencySettings(IDataObject dataObject)

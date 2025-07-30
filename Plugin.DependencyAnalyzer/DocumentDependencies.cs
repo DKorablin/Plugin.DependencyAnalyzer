@@ -89,8 +89,8 @@ namespace Plugin.DependencyAnalyzer
 
 		private void Window_Closed(Object sender, EventArgs e)
 		{
+			//this.Plugin.CallDependenciesChanged(this, EventType.Close, null);
 			this.Plugin.Settings.PropertyChanged -= this.Settings_PropertyChanged;
-			this.Plugin.CallDependencyInfo(this, null);
 			this.Plugin.Settings.SplitterHorizontalDistance = splitHorizontal.SplitterDistance;
 		}
 
@@ -383,7 +383,7 @@ namespace Plugin.DependencyAnalyzer
 				String filePath = PluginWindows.OpenGraphFilePath();
 				if(filePath == null)
 				{
-					this.Plugin.CallDependencyInfo(this, null, EventType.Close);
+					this.Plugin.CallDependenciesChanged(this, EventType.Close, null);
 					this.Window.Close();
 					return;
 				}
@@ -408,7 +408,7 @@ namespace Plugin.DependencyAnalyzer
 			{
 			case ".msagl":
 				graph = Graph.Read(this.Settings.GraphFilePath);
-				analyzer = new LibraryAnalyzer(this.Plugin.Trace, (String)graph.UserData, this.Plugin.Settings.SearchType);//Must be a path to the original assembly
+				analyzer = new LibraryAnalyzer(this.Plugin.Trace, (String)graph.UserData, this.Plugin.Settings.SearchType);//It must be a path to the original assembly.
 				break;
 			//case ".dll":
 			//case ".exe":

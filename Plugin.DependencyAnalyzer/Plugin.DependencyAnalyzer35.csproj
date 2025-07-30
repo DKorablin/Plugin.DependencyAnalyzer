@@ -37,8 +37,8 @@
     <PackageReference Include="AlphaOmega.PEReader" />
     <PackageReference Include="Microsoft.AutomaticGraphLayout.GraphViewerGDI" />
     <PackageReference Include="SAL.Windows">
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

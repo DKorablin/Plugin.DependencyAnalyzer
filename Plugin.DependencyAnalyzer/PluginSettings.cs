@@ -273,6 +273,7 @@ namespace Plugin.DependencyAnalyzer
 					nameof(this.LibraryColor));
 		}
 
+		/// <summary>Libraries list default height</summary>
 		[Category("UI")]
 		[DisplayName("Splitter distance")]
 		[Description("Libraries list default height")]
