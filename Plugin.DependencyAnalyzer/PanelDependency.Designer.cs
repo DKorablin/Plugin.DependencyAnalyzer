@@ -30,18 +30,8 @@
 		{
 			components = new System.ComponentModel.Container();
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.bwLoadDataObjectFromLibrary = new System.ComponentModel.BackgroundWorker();
-
-			//
-			// bwLoadDataObjectFromLibrary
-			//
-			this.bwLoadDataObjectFromLibrary.WorkerSupportsCancellation = true;
-			this.bwLoadDataObjectFromLibrary.DoWork += this.bwLoadDataObjectFromLibrary_DoWork;
-			this.bwLoadDataObjectFromLibrary.RunWorkerCompleted += this.bwLoadDataObjectFromLibrary_RunWorkerCompleted;
 		}
 
 		#endregion
-
-		private System.ComponentModel.BackgroundWorker bwLoadDataObjectFromLibrary;
 	}
 }

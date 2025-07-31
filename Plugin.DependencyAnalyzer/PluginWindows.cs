@@ -115,14 +115,11 @@ namespace Plugin.DependencyAnalyzer
 		{
 			if(isOpen)
 			{
-				_ = System.Threading.Tasks.Task.Factory.StartNew(() =>
+				var settings = new PanelDependencySettings(data)
 				{
-					var settings = new PanelDependencySettings(data)
-					{
-						GraphFilePath = document.Settings.GraphFilePath,
-					};
-					this.CreateWindow<PanelDependency, PanelDependencySettings>(settings);
-				});
+					GraphFilePath = document.Settings.GraphFilePath,
+				};
+				this.CreateWindow<PanelDependency, PanelDependencySettings>(settings);
 			}
 		}
 
@@ -135,7 +132,7 @@ namespace Plugin.DependencyAnalyzer
 				Data = data,
 			};
 
-			_ = System.Threading.Tasks.Task.Factory.StartNew(() => this.OnDependenciesChanged?.Invoke(document, args));
+			this.OnDependenciesChanged?.Invoke(document, args);
 		}
 
 		internal static String OpenGraphFilePath()

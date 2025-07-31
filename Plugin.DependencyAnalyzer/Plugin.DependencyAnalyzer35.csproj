@@ -56,6 +56,10 @@
       <Link>UI\ContextMenuStripCopy.cs</Link>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="..\WinForms.Shared\SortableListView.cs">
+      <Link>UI\SortableListView.cs</Link>
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Data\DataObjectAnalyze.cs" />
     <Compile Include="Data\DataObjectReferences.cs" />
     <Compile Include="Data\IDataObject.cs" />
@@ -74,6 +78,7 @@
     <Compile Include="Events\EventType.cs" />
     <Compile Include="Events\NodeVisibilityChangedEventArgs.cs" />
     <Compile Include="Extensions\AssemblyNameExtensions.cs" />
+    <Compile Include="Extensions\ControlExtensions.cs" />
     <Compile Include="PanelDependency.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -119,7 +124,6 @@
     <Compile Include="UI\LibrarySearchDropDownButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="UI\ListViewColumnSorter.cs" />
     <Compile Include="UI\ListViewLibraryNodes.cs">
       <SubType>Component</SubType>
     </Compile>

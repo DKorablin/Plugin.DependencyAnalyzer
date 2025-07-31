@@ -1,8 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Plugin.DependencyAnalyzer.Data;
+using Plugin.DependencyAnalyzer.Extensions;
 using Plugin.DependencyAnalyzer.Properties;
 using Plugin.DependencyAnalyzer.UI.Graph;
 using SAL.Flatbed;
@@ -62,10 +63,8 @@ namespace Plugin.DependencyAnalyzer
 		private void Window_Closed(Object sender, EventArgs e)
 			=> this.Plugin.OnDependenciesChanged -= this.Plugin_OnDependenciesChanged;
 
-		private void bwLoadDataObjectFromLibrary_DoWork(Object sender, DoWorkEventArgs e)
+		private Data.IDataObject LoadDataObjectFromLibrary(Library lib)
 		{
-			Library lib = (Library)e.Argument;
-
 			Data.IDataObject dataObject;
 			switch(this.Settings.ControlType)
 			{
@@ -90,29 +89,7 @@ namespace Plugin.DependencyAnalyzer
 				throw new NotImplementedException();
 			}
 
-			e.Result = dataObject;
-		}
-
-		private void bwLoadDataObjectFromLibrary_RunWorkerCompleted(Object sender, RunWorkerCompletedEventArgs e)
-		{
-			try
-			{
-				this._loadLibraryElapsed.Stop();
-				if(e.Cancelled) return;
-
-				if(e.Error != null)
-				{
-					this.Plugin.Trace.TraceData(TraceEventType.Error, 1, e.Error);
-					return;
-				}
-
-				Data.IDataObject dataObject = (Data.IDataObject)e.Result;
-				this.ShowInfoCtrl(dataObject);
-			} finally
-			{
-				this.Cursor = Cursors.Default;
-				this.Plugin.Trace.TraceInformation("Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, this._loadLibraryElapsed.Elapsed);
-			}
+			return dataObject;
 		}
 
 		private void CreateInfoCtrl()
@@ -134,12 +111,30 @@ namespace Plugin.DependencyAnalyzer
 				this.Window.Caption = "Loading...";
 				this.Cursor = Cursors.WaitCursor;
 				this._loadLibraryElapsed.Restart();
-				bwLoadDataObjectFromLibrary.RunWorkerAsync(lib);
+
+				Task.Factory.StartNew(() => this.LoadDataObjectFromLibrary(lib))
+					.ContinueWith(task => this.ShowInfoCtrl(task.Result),
+						TaskContinuationOptions.OnlyOnRanToCompletion)
+					.ContinueWith(task => this.Plugin.Trace.TraceData(TraceEventType.Error, 10, task.Exception.Flatten()),
+						TaskContinuationOptions.OnlyOnFaulted)
+					.ContinueWith(task =>
+					{
+						this._loadLibraryElapsed.Stop();
+
+						this.InvokeWithCheck(() => this.Cursor = Cursors.Default);
+						this.Plugin.Trace.TraceInformation("Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, this._loadLibraryElapsed.Elapsed);
+					});
 			}
 		}
 
 		private void ShowInfoCtrl(Data.IDataObject dataObject)
 		{
+			if(this.InvokeRequired)
+			{
+				this.BeginInvoke(new MethodInvoker(() => this.ShowInfoCtrl(dataObject)));
+				return;
+			}
+
 			this.Window.Caption = dataObject.Name;
 
 			if(dataObject is DataObjectSave save)

@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using AlphaOmega.Windows.Forms;
 using Microsoft.Msagl.Drawing;
 using Plugin.DependencyAnalyzer.Data;
 using Plugin.DependencyAnalyzer.Events;
 
 namespace Plugin.DependencyAnalyzer.UI
 {
-	internal class ListViewLibraryNodes : ListView
+	internal class ListViewLibraryNodes : SortableListView
 	{
-		private readonly ListViewColumnSorter _columnSorter = new ListViewColumnSorter();
 		private readonly ColumnHeader _colNodesName = new ColumnHeader() { Text = "Name", };
 		private readonly ColumnHeader _colNodesPath = new ColumnHeader() { Text = "Path", };
 		private readonly ColumnHeader _colNodesVersion = new ColumnHeader() { Text = "Version" };
@@ -36,7 +36,6 @@ namespace Plugin.DependencyAnalyzer.UI
 			this.FullRowSelect = true;
 			this.GridLines = true;
 			this.View = View.Details;
-			this.ListViewItemSorter = _columnSorter;
 
 			this.Columns.AddRange(new ColumnHeader[] {
 				this._colNodesName,
@@ -129,23 +128,6 @@ namespace Plugin.DependencyAnalyzer.UI
 			foreach(Edge edge in node.Edges)
 				edge.IsVisible = node.IsVisible;
 			this.OnNodeVisibilityChanged?.Invoke(this, new NodeVisibilityChangedEventArgs(new Node[] { node }, NodeVisibilityChangedEventArgs.ChangeType.Visibility));
-		}
-
-		protected override void OnColumnClick(ColumnClickEventArgs e)
-		{
-			if(e.Column == this._columnSorter.SortColumn)
-				this._columnSorter.Order = this._columnSorter.Order == SortOrder.Ascending
-					? SortOrder.Descending
-					: SortOrder.Ascending;
-			else
-			{
-				this._columnSorter.SortColumn = e.Column;
-				this._columnSorter.Order = SortOrder.Ascending;
-			}
-
-			this.Sort();
-
-			base.OnColumnClick(e);
 		}
 	}
 }
