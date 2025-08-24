@@ -216,12 +216,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: bin
-    - name: Download and Merge Lite Version
-      # Fetching the latest release from the other repository and merges it.
+    - name: Download and Merge Flatbed.Dialog.Lite Version
+      # Fetching the latest release from the SAL host repository and merges it with current plugin release.
       run: |
         cd ${{github.workspace}}/bin
         # Get the latest release tag from the target repository
-        LATEST_VERSION=$(curl -s "https://api.github.com/repos/DKorablin/Flatbed.Dialog.Lite/releases/latest" | jq -r .tag_name)
+        LATEST_VERSION=$(curl -s -H "Authorization: token ${{secrets.DEPLOYMENT_TOKEN}}" "https://api.github.com/repos/DKorablin/Flatbed.Dialog.Lite/releases/latest" | jq -r .tag_name)
         
         if [ "$LATEST_VERSION" = "null" ] || [ -z "$LATEST_VERSION" ]; then
           echo "Could not find the latest release for DKorablin/Flatbed.Dialog.Lite. Skipping merge."
@@ -239,7 +239,7 @@ jobs:
           echo "Attempting to download $ASSET_NAME"
           
           # Download the asset
-          curl -s -L -o "${ASSET_NAME}" "$DOWNLOAD_URL"
+          curl -s -L -H "Authorization: token ${{secrets.DEPLOYMENT_TOKEN}}" -H "Accept: application/octet-stream" -o "${ASSET_NAME}" "$DOWNLOAD_URL"
           
           # Check if the download was successful
           if [ -f "${ASSET_NAME}" ]; then
