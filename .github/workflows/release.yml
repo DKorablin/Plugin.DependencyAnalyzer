@@ -216,49 +216,32 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: bin
-    - name: Download and Merge Flatbed.Dialog.Lite Version
-      # Fetching the latest release from the SAL host repository and merges it with current plugin release.
+    - name: Get latest Flatbed.Dialog.Lite release version
+      id: get_flatbed_release
       run: |
-        cd ${{github.workspace}}/bin
-        # Get the latest release tag from the target repository
-        LATEST_VERSION=$(curl -s -H "Authorization: token ${{secrets.DEPLOYMENT_TOKEN}}" "https://api.github.com/repos/DKorablin/Flatbed.Dialog.Lite/releases/latest" | jq -r .tag_name)
-        
+        LATEST_VERSION=$(curl -s -H "Authorization: token ${{ secrets.DEPLOYMENT_TOKEN }}" "https://api.github.com/repos/DKorablin/Flatbed.Dialog.Lite/releases/latest" | jq -r .tag_name)
         if [ "$LATEST_VERSION" = "null" ] || [ -z "$LATEST_VERSION" ]; then
-          echo "Error: Could not find the latest release for DKorablin/Flatbed.Dialog.Lite. Skipping merge."
+          echo "Error: Could not find the latest release for DKorablin/Flatbed.Dialog.Lite."
           exit 1
         fi
-        echo "Latest Flatbed.Dialog.Lite version is $LATEST_VERSION"
-
-        # Downloading all expected assets for specific folders
-        for dir in */; do
-          dir_name="${dir%/}"
-
-          # Conditionally set the framework name for the asset because Flatbed application was built on specific versions
-          if [[ $dir_name == v* ]]; then
-            asset_framework_name="v3.5"
-          else
-            asset_framework_name="net8.0-windows"
-          fi
-
-          # Construct the expected asset name
-          ASSET_NAME="Flatbed.Dialog.Lite_${LATEST_VERSION}_${asset_framework_name}.zip"
-          DOWNLOAD_URL="https://github.com/DKorablin/Flatbed.Dialog.Lite/releases/download/${LATEST_VERSION}/${ASSET_NAME}"
-
-          echo "Checking for asset $ASSET_NAME"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -H "Authorization: token ${{ secrets.DEPLOYMENT_TOKEN }}" "$DOWNLOAD_URL")
-          
-          # Downloading asset and unzip it into current folder
-          if [ "$HTTP_STATUS" -eq 200 ]; then
-            echo "Downloading asset..."
-            curl -s -L -H "Authorization: token ${{ secrets.DEPLOYMENT_TOKEN }}" -H "Accept: application/octet-stream" -o "${ASSET_NAME}" "$DOWNLOAD_URL"
-            echo "Successfully downloaded. Extracting to $dir_name"
-            unzip -o "${ASSET_NAME}" -d "$dir_name"
-            rm "${ASSET_NAME}"
-          else
-            echo "Error: Could not download asset ${ASSET_NAME}. HTTP status: $HTTP_STATUS. It may not exist for this .NET version."
-            exit 1
-          fi
-        done
+    - name: Download and Merge .NET Framework Flatbed.Dialog.Lite Version
+      if: needs.detect_frameworks.outputs.net_framework_project_exists == 'true'
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: DKorablin/Flatbed.Dialog.Lite
+        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.version }}_v3.5.zip
+        target: bin/${{ needs.detect_frameworks.outputs.net_framework_version }}
+        extract: true
+        token: ${{ secrets.DEPLOYMENT_TOKEN }}
+    - name: Download and Merge .NET Flatbed.Dialog.Lite Version
+      if: needs.detect_frameworks.outputs.net_project_exists == 'true'
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: DKorablin/Flatbed.Dialog.Lite
+        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.version }}_net8.0-windows.zip
+        target: bin/${{ needs.detect_frameworks.outputs.net_version }}
+        extract: true
+        token: ${{ secrets.DEPLOYMENT_TOKEN }}
     - name: Zipping individual artifacts
       run: |
         # Packing each subdirectory into different release asset
