@@ -224,14 +224,14 @@ jobs:
           echo "Error: Could not find the latest release for DKorablin/Flatbed.Dialog.Lite."
           exit 1
         else
-          echo "Flatbed.Dialog.Lite latest version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
         fi
     - name: Download and Merge .NET Framework Flatbed.Dialog.Lite Version
       if: needs.build_net_framework.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: DKorablin/Flatbed.Dialog.Lite
-        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.version }}_v3.5.zip
+        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip
         target: bin/${{ needs.detect_frameworks.outputs.net_framework_version }}
         extract: true
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
@@ -240,7 +240,7 @@ jobs:
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: DKorablin/Flatbed.Dialog.Lite
-        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.version }}_net8.0-windows.zip
+        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip
         target: bin/${{ needs.detect_frameworks.outputs.net_version }}
         extract: true
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
