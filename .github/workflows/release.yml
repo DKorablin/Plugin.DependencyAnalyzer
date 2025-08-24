@@ -233,7 +233,6 @@ jobs:
         repo: DKorablin/Flatbed.Dialog.Lite
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip
         target: bin/${{ needs.detect_frameworks.outputs.net_framework_version }}
-        extract: true
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
     - name: Download and Merge .NET Flatbed.Dialog.Lite Version
       if: needs.build_net.result == 'success'
@@ -242,7 +241,6 @@ jobs:
         repo: DKorablin/Flatbed.Dialog.Lite
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip
         target: bin/${{ needs.detect_frameworks.outputs.net_version }}
-        extract: true
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
     - name: Zipping individual artifacts
       run: |
