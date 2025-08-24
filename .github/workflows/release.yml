@@ -241,7 +241,7 @@ jobs:
           fi
 
           # Construct the expected asset name
-          ASSET_NAME="Flatbed.Dialog.Lite_${LATEST_VERSION}_${dir_name}.zip"
+          ASSET_NAME="Flatbed.Dialog.Lite_${LATEST_VERSION}_${asset_framework_name}.zip"
           DOWNLOAD_URL="https://github.com/DKorablin/Flatbed.Dialog.Lite/releases/download/${LATEST_VERSION}/${ASSET_NAME}"
 
           echo "Checking for asset $ASSET_NAME"
