@@ -25,7 +25,7 @@
 	</metadata>
 	<files>
 		<file src="README.md" target="docs" />
-		<!--file src="bin\v3.5\Plugin.DependencyAnalyzer.xml" target="xml" /-->
-		<file src="bin\v3.5\Plugin.DependencyAnalyzer.dll" target="lib\net48" />
+		<!--file src="bin\v4.8\Plugin.DependencyAnalyzer.xml" target="xml" /-->
+		<file src="bin\v4.8\Plugin.DependencyAnalyzer.dll" target="lib\net48" />
 	</files>
 </package>
