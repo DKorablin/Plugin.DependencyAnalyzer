@@ -221,24 +221,25 @@ jobs:
           echo "Error: Could not find the latest release for DKorablin/Flatbed.Dialog.Lite."
           exit 1
         else
-          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "framework_file_name=Flatbed.Dialog.Lite_$LATEST_VERSION_v3.5.zip" >> $GITHUB_OUTPUT
+          echo "net_file_name=Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip" >> $GITHUB_OUTPUT
         fi
     - name: Download and Merge .NET Framework Flatbed.Dialog.Lite Version
       if: needs.build_net_framework.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip
+        file: ${{ steps.get_flatbed_release.outputs.framework_file_name }}
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_framework_version }}/Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip"
+        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_framework_version }}/${{ steps.get_flatbed_release.outputs.framework_file_name }}"
     - name: Download and Merge .NET Flatbed.Dialog.Lite Version
       if: needs.build_net.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip
+        file: ${{ steps.get_flatbed_release.outputs.net_file_name }}
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_version }}/Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip"
+        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_version }}/${{ steps.get_flatbed_release.outputs.net_file_name }}"
     - name: Zipping individual artifacts
       run: |
         # Packing each subdirectory into different release asset
