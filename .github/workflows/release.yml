@@ -7,6 +7,7 @@
 # 3. Detect & Build: Detects the project types by using Target Framework from csproj files (.NET Framework vs .NET)
 #    and builds them separately using the appropriate tools (MSBuild or dotnet CLI).
 # 4. Deploy Release:
+#    - Moved release asset into Plugin folder to separate SAL Host and release assets.
 #    - Downloads latest release assets from a corresponding "Flatbed.Dialog.Lite" version repository.
 #    - Merges the downloaded assets into the build output.
 #    - Creates two separate zip archives for each framework type.
