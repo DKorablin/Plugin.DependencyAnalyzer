@@ -230,7 +230,7 @@ jobs:
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: bin/${{ needs.detect_frameworks.outputs.net_framework_version }}
+        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_framework_version }}"
     - name: Download and Merge .NET Flatbed.Dialog.Lite Version
       if: needs.build_net.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
@@ -238,7 +238,7 @@ jobs:
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: bin/${{ needs.detect_frameworks.outputs.net_version }}
+        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_version }}"
     - name: Zipping individual artifacts
       run: |
         # Packing each subdirectory into different release asset
