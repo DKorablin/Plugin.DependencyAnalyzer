@@ -236,9 +236,10 @@ jobs:
         for dir in */; do
           dir_name="${dir%/}"
           mkdir "$dir_name/Plugin"
-          # The `shopt -s dotglob` ensures that hidden files (like .gitignore) are also moved.
-          shopt -s dotglob
-          mv "$dir_name"/* "$dir_name/Plugin/"
+          # Enable extended globbing to exclude the "Plugin" folder from the move
+          shopt -s dotglob extglob
+          # Move everything except the "Plugin" folder itself into the "Plugin" folder
+          mv "$dir_name"/!(Plugin) "$dir_name/Plugin/"
         done
     # This step query the latest version of SAL Flatbed application to store executable files inside current release
     - name: Get latest Flatbed.Dialog.Lite release version
