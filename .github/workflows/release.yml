@@ -106,7 +106,7 @@ jobs:
 
   build_net_framework:
     name: Building .NET Framework assembly
-    needs: [version,detect_frameworks]
+    needs: [version, detect_frameworks]
     if: needs.detect_frameworks.outputs.net_framework_project_exists == 'true'
     runs-on: windows-latest
     steps:
@@ -153,7 +153,7 @@ jobs:
 
   build_net:
     name: Building .NET assembly
-    needs: [version,detect_frameworks]
+    needs: [version, detect_frameworks]
     if: needs.detect_frameworks.outputs.net_project_exists == 'true'
     runs-on: windows-latest
     steps:
@@ -202,10 +202,7 @@ jobs:
 
   deploy_release:
     name: Deploying release
-    needs:
-      - version
-      - build_net_framework
-      - build_net
+    needs: [version, detect_frameworks, build_net_framework, build_net]
     if: |
         always() &&
         (needs.build_net_framework.result == 'skipped' || needs.build_net_framework.result == 'success') &&
@@ -233,7 +230,7 @@ jobs:
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_v3.5.zip
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: "bin/${{ needs.detect_frameworks.outputs.net_framework_version }}"
+        target: bin/${{ needs.detect_frameworks.outputs.net_framework_version }}
     - name: Download and Merge .NET Flatbed.Dialog.Lite Version
       if: needs.build_net.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
@@ -241,7 +238,7 @@ jobs:
         file: Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip
         repo: DKorablin/Flatbed.Dialog.Lite
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: "bin/${{ needs.detect_frameworks.outputs.net_version }}"
+        target: bin/${{ needs.detect_frameworks.outputs.net_version }}
     - name: Zipping individual artifacts
       run: |
         # Packing each subdirectory into different release asset
@@ -265,10 +262,7 @@ jobs:
 
   deploy_nuget:
     name: Deploying NuGet package
-    needs:
-        - version
-        - build_net_framework
-        - build_net
+    needs: [version, build_net_framework, build_net]
     if: |
         always() &&
         (needs.build_net_framework.result == 'skipped' || needs.build_net_framework.result == 'success') &&
@@ -294,10 +288,7 @@ jobs:
   failure_cleanup:
   #error: tag '${{needs.version.outputs.new_tag}}' not found.
     name: Remove version tag on failure
-    needs:
-      - version
-      - build_net_framework
-      - build_net
+    needs: [version, build_net_framework, build_net]
     if: |
       always() &&
       needs.build_net_framework.result != 'success' &&
