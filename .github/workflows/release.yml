@@ -213,6 +213,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: bin
+    # We're querying the latest version of SAL Flatbed application to store executable files inside current release
     - name: Get latest Flatbed.Dialog.Lite release version
       id: get_flatbed_release
       run: |
@@ -224,22 +225,33 @@ jobs:
           echo "framework_file_name=Flatbed.Dialog.Lite_$LATEST_VERSION_v3.5.zip" >> $GITHUB_OUTPUT
           echo "net_file_name=Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip" >> $GITHUB_OUTPUT
         fi
-    - name: Download and Merge .NET Framework Flatbed.Dialog.Lite Version
+    # Downloading latest SAL executables for .NET Framework
+    - name: Download .NET Framework Flatbed.Dialog.Lite Version
       if: needs.build_net_framework.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: ${{ steps.get_flatbed_release.outputs.framework_file_name }}
         repo: DKorablin/Flatbed.Dialog.Lite
+        file: ${{ steps.get_flatbed_release.outputs.framework_file_name }}
+        target: "${{github.workspace}}/framework_lite.zip"
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
-        target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_framework_version }}/${{ steps.get_flatbed_release.outputs.framework_file_name }}"
-    - name: Download and Merge .NET Flatbed.Dialog.Lite Version
+    # After that we need to extract all files related to SAL executable into bin folder for specific build
+    - name: Extract .NET Framework Flatbed.Dialog.Lite Version
+      if: needs.build_net_framework.result == 'success'
+      run: unzip -o "${{github.workspace}}/framework_lite.zip" -d "bin/${{ needs.detect_frameworks.outputs.net_framework_version }}"
+    # Downloading latest SAL executables for .NET
+    - name: Download .NET Flatbed.Dialog.Lite Version
       if: needs.build_net.result == 'success'
       uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: ${{ steps.get_flatbed_release.outputs.net_file_name }}
         repo: DKorablin/Flatbed.Dialog.Lite
-        token: ${{ secrets.DEPLOYMENT_TOKEN }}
+        file: ${{ steps.get_flatbed_release.outputs.net_file_name }}
         target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_version }}/${{ steps.get_flatbed_release.outputs.net_file_name }}"
+        token: ${{ secrets.DEPLOYMENT_TOKEN }}
+    # After that we need to extract all files related to SAL executable into bin folder for specific build
+    - name: Extract .NET Lite Version
+      if: needs.build_net.result == 'success'
+      run: unzip -o "${{github.workspace}}/net_lite.zip" -d "bin/${{ needs.detect_frameworks.outputs.net_version }}"
+    # After SAL executables are also packed inside bin folder we need to pack all of them into separate release assets
     - name: Zipping individual artifacts
       run: |
         # Packing each subdirectory into different release asset
