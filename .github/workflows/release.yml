@@ -236,10 +236,16 @@ jobs:
         for dir in */; do
           dir_name="${dir%/}"
           mkdir "$dir_name/Plugin"
-          # Enable extended globbing to exclude the "Plugin" folder from the move
-          shopt -s dotglob extglob
-          # Move everything except the "Plugin" folder itself into the "Plugin" folder
-          mv "$dir_name"/!(Plugin) "$dir_name/Plugin/"
+          # Use a subshell and a for loop for a more compatible way to move files.
+          (
+            cd "$dir_name"
+            shopt -s dotglob
+            for item in *; do
+              if [[ "$item" != "Plugin" ]]; then
+                mv -- "$item" "Plugin/"
+              fi
+            done
+          )
         done
     # This step query the latest version of SAL Flatbed application to store executable files inside current release
     - name: Get latest Flatbed.Dialog.Lite release version
