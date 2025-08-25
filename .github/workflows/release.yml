@@ -1,3 +1,19 @@
+# This GitHub Actions workflow automates the entire CI/CD process for a .NET solution
+# that contains both a .NET Framework and .NET projects.
+#
+# Workflow Steps:
+# 1. Test: Runs unit tests for the solution.
+# 2. Version: Automatically increments the version number and creates a new git tag.
+# 3. Detect & Build: Intelligently detects the project types (.NET Framework vs .NET)
+#    and builds them separately using the appropriate tools (MSBuild or dotnet CLI).
+# 4. Deploy Release:
+#    - Downloads latest release assets from a corresponding "Flatbed.Dialog.Lite" version repository.
+#    - Merges the downloaded assets into the build output.
+#    - Creates two separate zip archives for each framework type.
+#    - Publishes a single GitHub Release containing both zip files.
+# 5. Deploy NuGet: Publishes a NuGet package to GitHub Packages.
+# 6. Cleanup: If any build or deploy step fails, it automatically removes the created git tag.
+
 name: Test, Buid, Release
 
 on:
@@ -222,8 +238,7 @@ jobs:
           echo "Error: Could not find the latest release for DKorablin/Flatbed.Dialog.Lite."
           exit 1
         else
-          echo "framework_file_name=Flatbed.Dialog.Lite_$LATEST_VERSION_v3.5.zip" >> $GITHUB_OUTPUT
-          echo "net_file_name=Flatbed.Dialog.Lite_${{ steps.get_flatbed_release.outputs.latest_version }}_net8.0-windows.zip" >> $GITHUB_OUTPUT
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
         fi
     # Downloading latest SAL executables for .NET Framework
     - name: Download .NET Framework Flatbed.Dialog.Lite Version
@@ -231,7 +246,7 @@ jobs:
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: DKorablin/Flatbed.Dialog.Lite
-        file: ${{ steps.get_flatbed_release.outputs.framework_file_name }}
+        file: Flatbed.Dialog.Lite_${{ steps.get_lite_release.outputs.latest_version }}_v3.5.zip
         target: "${{github.workspace}}/framework_lite.zip"
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
     # After that we need to extract all files related to SAL executable into bin folder for specific build
@@ -244,7 +259,7 @@ jobs:
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: DKorablin/Flatbed.Dialog.Lite
-        file: ${{ steps.get_flatbed_release.outputs.net_file_name }}
+        file: Flatbed.Dialog.Lite_${{ steps.get_lite_release.outputs.latest_version }}_net8.0-windows.zip
         target: "${{github.workspace}}/bin/${{ needs.detect_frameworks.outputs.net_version }}/${{ steps.get_flatbed_release.outputs.net_file_name }}"
         token: ${{ secrets.DEPLOYMENT_TOKEN }}
     # After that we need to extract all files related to SAL executable into bin folder for specific build
