@@ -75,8 +75,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._recursiveLevel;
 			set => this.SetField(ref this._recursiveLevel,
-					value > 10 || value < 1 ? (Byte)5 : value,
-					nameof(this.RecursiveLevel));
+				value > 10 || value < 1 ? (Byte)5 : value,
+				nameof(this.RecursiveLevel));
 		}
 
 		/// <summary>The type of search fo referenced assemblies.</summary>
@@ -143,8 +143,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._mouseHitDistance;
 			set => this.SetField(ref this._mouseHitDistance,
-					value > 0 ? value : 0.05,
-					nameof(this.MouseHitDistance));
+				value > 0 ? value : 0.05,
+				nameof(this.MouseHitDistance));
 		}
 
 		/// <summary>The loose offset for routing</summary>
@@ -154,8 +154,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._looseOffsetForRouting;
 			set => this.SetField(ref this._looseOffsetForRouting,
-					value > 0 ? value : 0.25,
-					nameof(this.LooseOffsetForRouting));
+				value > 0 ? value : 0.25,
+				nameof(this.LooseOffsetForRouting));
 		}
 
 		/// <summary>Length of arrowheads for newly inserted edges</summary>
@@ -166,8 +166,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._arrowheadLength;
 			set => this.SetField(ref this._arrowheadLength,
-					value > 0 ? value : 10,
-					nameof(this.ArrowheadLength));
+				value > 0 ? value : 10,
+				nameof(this.ArrowheadLength));
 		}
 
 		/// <summary>If is set to true then the mouse left click on a node and dragging the cursor to another node will create an edge and add it to the graph</summary>
@@ -187,8 +187,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._offsetForRelaxingInRouting;
 			set => this.SetField(ref this._offsetForRelaxingInRouting,
-					value > 0 ? value : 0.6,
-					nameof(OffsetForRelaxingInRouting));
+				value > 0 ? value : 0.6,
+				nameof(OffsetForRelaxingInRouting));
 		}
 
 		/// <summary>Padding used to route a new inserted edge around the nodes</summary>
@@ -199,8 +199,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._paddingForEdgeRouting;
 			set => this.SetField(ref this._paddingForEdgeRouting,
-					value > 0 ? value : 8,
-					nameof(this.PaddingForEdgeRouting));
+				value > 0 ? value : 8,
+				nameof(this.PaddingForEdgeRouting));
 		}
 
 		/// <summary>The tight Offset for routing</summary>
@@ -210,7 +210,7 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._tightOffsetForRouting;
 			set => this.SetField(ref this._tightOffsetForRouting,
-					value > 0 ? value : 0.125, nameof(this.TightOffsetForRouting));
+				value > 0 ? value : 0.125, nameof(this.TightOffsetForRouting));
 		}
 
 		/// <summary>Gets or sets the zoom factor</summary>
@@ -221,8 +221,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._zoomF;
 			set => this.SetField(ref this._zoomF,
-					value > 0 ? value : 1,
-					nameof(this.ZoomF));
+				value > 0 ? value : 1,
+				nameof(this.ZoomF));
 		}
 
 		/// <summary>If the minimal side of the zoom window is shorter than the threshold then zoom does not take place</summary>
@@ -233,8 +233,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._zoomWindowThreshold;
 			set => this.SetField(ref this._zoomWindowThreshold,
-					value > 0 ? value : 0.05,
-					nameof(this.ZoomWindowThreshold));
+				value > 0 ? value : 0.05,
+				nameof(this.ZoomWindowThreshold));
 		}
 
 		/// <summary>Color to draw reference to GAC or system library</summary>
@@ -245,8 +245,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._librarySystemColor;
 			set => this.SetField(ref this._librarySystemColor,
-					value == System.Drawing.Color.Empty ? Constants.LibrarySystemColor : value,
-					nameof(this.LibrarySystemColor));
+				value == System.Drawing.Color.Empty ? Constants.LibrarySystemColor : value,
+				nameof(this.LibrarySystemColor));
 		}
 
 		/// <summary>Color to draw reference to not found libraries</summary>
@@ -257,8 +257,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._libraryNotFoundColor;
 			set => this.SetField(ref this._libraryNotFoundColor,
-					value == System.Drawing.Color.Empty ? Constants.LibraryNotFoundColor : value,
-					nameof(this.LibraryNotFoundColor));
+				value == System.Drawing.Color.Empty ? Constants.LibraryNotFoundColor : value,
+				nameof(this.LibraryNotFoundColor));
 		}
 
 		/// <summary>Color to draw found references</summary>
@@ -269,8 +269,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._libraryColor;
 			set => this.SetField(ref this._libraryColor,
-					value == System.Drawing.Color.Empty ? Constants.LibraryColor : value,
-					nameof(this.LibraryColor));
+				value == System.Drawing.Color.Empty ? Constants.LibraryColor : value,
+				nameof(this.LibraryColor));
 		}
 
 		/// <summary>Libraries list default height</summary>
@@ -305,8 +305,8 @@ namespace Plugin.DependencyAnalyzer
 		{
 			get => this._backgroundColor;
 			set => this.SetField(ref this._backgroundColor,
-					value == System.Drawing.Color.Empty ? System.Drawing.Color.White : value,
-					nameof(this.BackgroundColor));
+				value == System.Drawing.Color.Empty ? System.Drawing.Color.White : value,
+				nameof(this.BackgroundColor));
 		}
 
 		[Category("Graph")]

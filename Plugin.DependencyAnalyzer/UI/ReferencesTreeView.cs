@@ -16,7 +16,7 @@ namespace Plugin.DependencyAnalyzer.UI
 	internal class ReferencesTreeView : TreeView
 	{
 		private const String EXPORT_TABLE_NAME = "Export Table";
-		private static Dictionary<NodeState, Color> State = new Dictionary<NodeState, Color>()
+		private static readonly Dictionary<NodeState, Color> State = new Dictionary<NodeState, Color>()
 		{
 			{ NodeState.Used, Color.Empty },
 			{ NodeState.NotUsed, Color.Gray },
@@ -89,19 +89,19 @@ namespace Plugin.DependencyAnalyzer.UI
 			}
 		}
 
-		private class ReferenceType
+		private sealed class ReferenceType
 		{
 			public TypeRefRow[] TypeRef { get; set; }
 			public MemberRefRow[] MemberRef { get; set; }
 		}
 
-		private class ReferenceModule
+		private sealed class ReferenceModule
 		{
 			public String ModuleRef { get; set; }
 			public ImplMapRow[] ImplMap { get; set; }
 		}
 
-		private class DefinedType
+		private sealed class DefinedType
 		{
 			public DefinedType ParentClass { get; set; }
 			public TypeDefRow TypeDef { get; private set; }
@@ -446,7 +446,7 @@ namespace Plugin.DependencyAnalyzer.UI
 
 		private static TreeNode GetOrAddNode(TreeNodeCollection nodes, String text, TreeImageType image)
 		{
-			foreach(TreeNode node in FindNode(nodes, (node) => { return node.Text == text; }))
+			foreach(TreeNode node in FindNode(nodes, node => node.Text == text))
 				return node;
 
 			TreeNode result = new TreeNode(text) { ImageIndex = (Int32)image, SelectedImageIndex = (Int32)image, };
@@ -456,7 +456,7 @@ namespace Plugin.DependencyAnalyzer.UI
 
 		private static TreeNode HighlightNode(TreeNodeCollection nodes, String text, TreeImageType image)
 		{
-			foreach(TreeNode node in FindNode(nodes, (node) => { return node.Text == text; }))
+			foreach(TreeNode node in FindNode(nodes, node => node.Text == text))
 				return HighlightNode(nodes, text, node, image);
 
 			return HighlightNode(nodes, text, null, image);

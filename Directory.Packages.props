@@ -15,5 +15,10 @@
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageVersion>
 		<PackageVersion Include="Microsoft.AutomaticGraphLayout.GraphViewerGDI" Version="1.1.13" />
+		<!--Analyzers-->
+		<GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.8.0.113526">
+			<PrivateAssets>All</PrivateAssets>
+			<IncludeAssets>Runtime; Build; Native; contentfiles; Analyzers; buildtransitive</IncludeAssets>
+		</GlobalPackageReference>
 	</ItemGroup>
 </Project>

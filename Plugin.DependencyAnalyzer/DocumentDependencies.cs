@@ -207,7 +207,7 @@ namespace Plugin.DependencyAnalyzer
 			var relativePoint = lvNodes.PointToClient(Cursor.Position);
 			var hitTestInfo = lvNodes.HitTest(relativePoint);
 			e.Cancel = lvNodes.SelectedItems.Count == 0 || hitTestInfo.Item == null;
-			if(e.Cancel == false)
+			if(!e.Cancel)
 			{
 				Node node = lvNodes.SelectedGraphNode;
 				Library lib = (Library)node.UserData;
@@ -475,7 +475,7 @@ namespace Plugin.DependencyAnalyzer
 				Graph graph = (Graph)e.Result;
 				LibraryAnalyzer analyzer = (LibraryAnalyzer)graph.UserData;
 
-				if(analyzer.StartLibrary.IsFound == false)
+				if(!analyzer.StartLibrary.IsFound)
 				{
 					graph.UserData = null;
 					this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Error");

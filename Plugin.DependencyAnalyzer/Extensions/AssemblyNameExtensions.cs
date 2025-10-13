@@ -20,8 +20,8 @@ namespace Plugin.DependencyAnalyzer
 
 			foreach(Byte b in data)
 			{
-				result.Append(HexAlphabet[(Int32)(b >> 4)]);
-				result.Append(HexAlphabet[(Int32)(b & 0xF)]);
+				result.Append(HexAlphabet[(b >> 4)]);
+				result.Append(HexAlphabet[(b & 0xF)]);
 			}
 
 			return result.ToString();

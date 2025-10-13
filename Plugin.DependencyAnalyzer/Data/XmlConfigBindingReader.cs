@@ -26,7 +26,7 @@ namespace ExecInfo.Dal.Documentation
 
 		private readonly XmlDocument _configFile;
 		private List<KeyValuePair<AssemblyIdentity, BindingRedirect>> _redirectCache;
-		private Object _lock = new Object();
+		private readonly Object _lock = new Object();
 
 		public XmlConfigBindingReader(Assembly assembly)
 		{

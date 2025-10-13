@@ -39,7 +39,7 @@ namespace Plugin.DependencyAnalyzer.Data
 		{
 			_ = parent ?? throw new ArgumentNullException(nameof(parent));
 
-			if(parent.IsFound == false)
+			if(!parent.IsFound)
 				throw new FileNotFoundException("Library not found", parent.Path);
 
 			this.StartLibrary = parent;

@@ -88,8 +88,8 @@ namespace Plugin.DependencyAnalyzer.Data
 		{
 			get => this._imageScale;
 			set => this._imageScale = value >= 1.0 && value <= 10
-					? value
-					: this._imageScale;
+				? value
+				: this._imageScale;
 		}
 
 		[Editor(typeof(SaveFileEditor), typeof(UITypeEditor))]
@@ -193,10 +193,10 @@ namespace Plugin.DependencyAnalyzer.Data
 			switch(this.View)
 			{
 			case SaveViewType.Visible:
-				DrawCurrent(graphics);
+				this.DrawCurrent(graphics);
 				break;
 			default:
-				DrawAll(size, graphics);
+				this.DrawAll(size, graphics);
 				break;
 			}
 		}

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Plugin.DependencyAnalyzer.Shared
 {
-	internal class NativeWrapper
+	internal static class NativeWrapper
 	{
 		/// <summary>Search file</summary>
 		/// <param name="fileName">File name to search</param>
@@ -28,9 +28,8 @@ namespace Plugin.DependencyAnalyzer.Shared
 		private static String SearchPath(String fileName, ref Int32 bufferLength)
 		{
 			StringBuilder buffer = new StringBuilder(bufferLength);
-			IntPtr dummy = new IntPtr();
 
-			UInt32 hResult = Native.SearchPath(null, fileName, null, buffer.Capacity, buffer, out dummy);
+			UInt32 hResult = Native.SearchPath(null, fileName, null, buffer.Capacity, buffer, out IntPtr dummy);
 			if(hResult == 0)//Not found
 			{
 				bufferLength = 0;
