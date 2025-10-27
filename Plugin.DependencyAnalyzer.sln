@@ -22,6 +22,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.DependencyAnalyzer", "Plugin.DependencyAnalyzer\Plugin.DependencyAnalyzer.csproj", "{2D9EEA13-9F12-802D-394F-DF3284AAC0E2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{11C016C7-912F-4315-B649-5292E8F761E2}"
+	ProjectSection(SolutionItems) = preProject
+		.github\scripts\Build-ReleasePackage.ps1 = .github\scripts\Build-ReleasePackage.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +43,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {8A3B33BE-6909-415A-AF70-7EE7E0D6F352}
+		{11C016C7-912F-4315-B649-5292E8F761E2} = {8A3B33BE-6909-415A-AF70-7EE7E0D6F352}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E5CCF0CA-46B8-44C0-BCC9-FC2698AFD7FD}

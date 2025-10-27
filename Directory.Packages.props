@@ -2,16 +2,9 @@
 	<PropertyGroup>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
-	<!--ItemGroup>
-		<GlobalPackageReference Include="AlphaOmega.PEReader" Version="1.3.4" />
-		<GlobalPackageReference Include="SAL.Windows" Version="1.2.10">
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</GlobalPackageReference>
-		<GlobalPackageReference Include="Microsoft.AutomaticGraphLayout.GraphViewerGDI" Version="1.1.13" />
-	</ItemGroup-->
 	<ItemGroup>
-		<PackageVersion Include="AlphaOmega.PEReader" Version="1.3.5" />
-		<PackageVersion Include="SAL.Windows" Version="1.2.10">
+		<PackageVersion Include="AlphaOmega.PEReader" Version="1.3.6" />
+		<PackageVersion Include="SAL.Windows" Version="1.2.11">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageVersion>
 		<PackageVersion Include="Microsoft.AutomaticGraphLayout.GraphViewerGDI" Version="1.1.13" />

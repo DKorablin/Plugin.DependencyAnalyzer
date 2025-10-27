@@ -9,8 +9,8 @@
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);CA1416</NoWarn>
-		<DefineConstants>$(DefineConstants)</DefineConstants>
+		<CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
+		<NoWarn>CA1416</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -27,11 +27,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
 		<Reference Include="System.Drawing.Design" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-		<AssemblyAttributes Include="System.Runtime.Versioning.SupportedOSPlatform">
-			<_Parameter1>Windows</_Parameter1>
-		</AssemblyAttributes>
 	</ItemGroup>
 
 	<!--nuspec-->
@@ -63,4 +58,12 @@
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>
+
+	<!-- Exclude assemblies from copy to the output directory on build-->
+	<Target Name="ExcludeSystemAssemblies" AfterTargets="ResolveReferences">
+		<ItemGroup>
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(Filename)').StartsWith('System.'))" />
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Win32.'))" />
+		</ItemGroup>
+	</Target>
 </Project>
