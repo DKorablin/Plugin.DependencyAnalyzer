@@ -38,6 +38,7 @@
 		<Authors>Danila Korablin</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>docs\README.md</PackageReadmeFile>
+		<PackageIcon>docs\SAL.100.png</PackageIcon>
 		<RepositoryUrl>https://github.com/DKorablin/Plugin.DependencyAnalyzer</RepositoryUrl>
 		<PackageTags>SAL plugin analyzer dependencies cli pe</PackageTags>
 	</PropertyGroup>
@@ -49,6 +50,7 @@
 
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="\docs" />
+		<None Include="..\Images.Shared\SAL.100.png" Pack="true" PackagePath="\docs" />
 	</ItemGroup>
 
 	<ItemGroup>
