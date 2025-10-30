@@ -7,3 +7,6 @@
 [submodule "Reflection.Shared"]
 	path = Reflection.Shared
 	url = https://DKorablin@github.com/DKorablin/Reflection.Shared.git
+[submodule "Plugin.DependencyAnalyzer/Images.Shared"]
+	path = Plugin.DependencyAnalyzer/Images.Shared
+	url = https://github.com/DKorablin/Images.Shared
