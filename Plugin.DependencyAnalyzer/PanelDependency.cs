@@ -122,7 +122,7 @@ namespace Plugin.DependencyAnalyzer
 						this._loadLibraryElapsed.Stop();
 
 						this.InvokeWithCheck(() => this.Cursor = Cursors.Default);
-						this.Plugin.Trace.TraceInformation("Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, this._loadLibraryElapsed.Elapsed);
+						this.Plugin.Trace.TraceEvent(TraceEventType.Information, 0, "Library {0} from path {1} loaded in {2}.", this.Settings.ControlType, this.Settings.AssemblyPath, this._loadLibraryElapsed.Elapsed);
 					});
 			}
 		}

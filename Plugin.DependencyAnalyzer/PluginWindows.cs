@@ -11,7 +11,6 @@ namespace Plugin.DependencyAnalyzer
 	public class PluginWindows : IPlugin,IPluginSettings<PluginSettings>
 	{
 		private readonly IHostWindows _hostWindows;
-		private TraceSource _trace;
 		private Dictionary<String, DockState> _documentTypes;
 		private IMenuItem _menuReferencesGraph;
 		private IMenuItem _menuReferencesAnalyze;
@@ -19,7 +18,7 @@ namespace Plugin.DependencyAnalyzer
 
 		internal event EventHandler<EventArgsBase> OnDependenciesChanged;
 
-		internal TraceSource Trace => this._trace ?? (this._trace = PluginWindows.CreateTraceSource<PluginWindows>());
+		internal ITraceSource Trace { get; }
 
 		private IMenuItem MenuWinApi { get; set; }
 
@@ -56,8 +55,11 @@ namespace Plugin.DependencyAnalyzer
 		/// <summary>Create instance of dependency analyzer plugin and specify host interface</summary>
 		/// <param name="hostWindows">The host interface</param>
 		/// <exception cref="ArgumentNullException"><paramref name="hostWindows"/> is required</exception>
-		public PluginWindows(IHostWindows hostWindows)
-			=> this._hostWindows = hostWindows ?? throw new ArgumentNullException(nameof(hostWindows));
+		public PluginWindows(IHostWindows hostWindows, ITraceSource trace)
+		{
+			this._hostWindows = hostWindows ?? throw new ArgumentNullException(nameof(hostWindows));
+			this.Trace = trace ?? throw new ArgumentNullException(nameof(trace));
+		}
 
 		Boolean IPlugin.OnConnection(ConnectMode mode)
 		{
@@ -174,15 +176,6 @@ namespace Plugin.DependencyAnalyzer
 		{
 			String typeName = typeof(T).ToString();
 			return this.CreateWindow(typeName, true, args);
-		}
-
-		private static TraceSource CreateTraceSource<T>(String name = null) where T : IPlugin
-		{
-			TraceSource result = new TraceSource(typeof(T).Assembly.GetName().Name + name);
-			result.Switch.Level = SourceLevels.All;
-			result.Listeners.Remove("Default");
-			result.Listeners.AddRange(System.Diagnostics.Trace.Listeners);
-			return result;
 		}
 
 		#region Event Handlers

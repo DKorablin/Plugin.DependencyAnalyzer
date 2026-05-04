@@ -479,18 +479,18 @@ namespace Plugin.DependencyAnalyzer
 				{
 					graph.UserData = null;
 					this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, "Error");
-					this.Plugin.Trace.TraceInformation("File {0} graph NOT loaded in {1}. References: {2:N0}", this.Settings.GraphFilePath, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
+					this.Plugin.Trace.TraceEvent(TraceEventType.Information, 0, "File {0} graph NOT loaded in {1}. References: {2:N0}", this.Settings.GraphFilePath, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					graphView.Graph = null;
 				} else
 				{
 					if(analyzer.StartLibrary.Assembly != null)
 					{
 						this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, analyzer.StartLibrary.Assembly.FullName);
-						this.Plugin.Trace.TraceInformation("Assembly {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Assembly.FullName, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
+						this.Plugin.Trace.TraceEvent(TraceEventType.Information, 0, "Assembly {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Assembly.FullName, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					} else
 					{
 						this.Window.Caption = String.Join(" - ", DocumentDependencies.Caption, analyzer.StartLibrary.ShowAsString());
-						this.Plugin.Trace.TraceInformation("Executable {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Name, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
+						this.Plugin.Trace.TraceEvent(TraceEventType.Information, 0, "Executable {0} graph loaded in {1}. References: {2:N0}", analyzer.StartLibrary.Name, this._loadLibraryElapsed.Elapsed, analyzer.KnownLibraries.Count);
 					}
 
 					this._selectedObject = this._selectedObjectAttr = null;

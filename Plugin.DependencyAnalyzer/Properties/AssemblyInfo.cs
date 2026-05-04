@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 [assembly: System.CLSCompliant(false)]
 
 [assembly: AssemblyDescription(".NET Assembly reference analyzer with Microsoft Automatic Graph Layout and PEReader")]
-[assembly: AssemblyCopyright("Copyright © Danila Korablin 2016-2025")]
 
 /*if $(ConfigurationName) == Release (
 ..\..\..\..\ILMerge.exe /v4  "/out:$(ProjectDir)..\bin\$(TargetFileName)" "$(TargetPath)" "$(TargetDir)PEReader.dll" "$(TargetDir)Microsoft.Msagl.dll" "$(TargetDir)Microsoft.Msagl.Drawing.dll" "$(TargetDir)Microsoft.Msagl.GraphViewerGdi.dll" "/lib:..\..\..\SAL\bin"

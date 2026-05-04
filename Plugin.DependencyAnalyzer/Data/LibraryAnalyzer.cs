@@ -8,12 +8,13 @@ using AlphaOmega.Debug;
 using AlphaOmega.Debug.CorDirectory.Meta.Tables;
 using AlphaOmega.Debug.NTDirectory;
 using AlphaOmega.Reflection;
+using SAL.Flatbed;
 
 namespace Plugin.DependencyAnalyzer.Data
 {
 	internal class LibraryAnalyzer
 	{
-		private readonly TraceSource _trace;
+		private readonly ITraceSource _trace;
 		private readonly String _localPath;
 		private readonly LibrarySearchType _searchType;
 
@@ -21,7 +22,7 @@ namespace Plugin.DependencyAnalyzer.Data
 
 		public Library StartLibrary { get; private set; }
 
-		public LibraryAnalyzer(TraceSource trace, String path, LibrarySearchType searchType)
+		public LibraryAnalyzer(ITraceSource trace, String path, LibrarySearchType searchType)
 			: this(trace, searchType)
 		{
 			_ = path ?? throw new ArgumentNullException(nameof(path));
@@ -34,7 +35,7 @@ namespace Plugin.DependencyAnalyzer.Data
 				throw new FileLoadException("This file is unreadable", path);
 		}
 
-		public LibraryAnalyzer(TraceSource trace, Library parent, LibrarySearchType searchType)
+		public LibraryAnalyzer(ITraceSource trace, Library parent, LibrarySearchType searchType)
 			: this(trace, searchType)
 		{
 			_ = parent ?? throw new ArgumentNullException(nameof(parent));
@@ -46,7 +47,7 @@ namespace Plugin.DependencyAnalyzer.Data
 			this._localPath = Path.GetDirectoryName(parent.Path);
 		}
 
-		private LibraryAnalyzer(TraceSource trace, LibrarySearchType searchType)
+		private LibraryAnalyzer(ITraceSource trace, LibrarySearchType searchType)
 		{
 			this._trace = trace;
 			this._searchType = searchType;
@@ -180,7 +181,7 @@ namespace Plugin.DependencyAnalyzer.Data
 		{
 			String key = version == null
 				? name
-				: String.Join(" ", new String[] { name, version.ToString(), });
+				: String.Join(" ", name, version.ToString());
 
 			Library result = this.KnownLibraries.TryGetValue(key, out result) ? result : null;
 			return result;
@@ -198,7 +199,7 @@ namespace Plugin.DependencyAnalyzer.Data
 		{
 			String key = library.Version == null
 				? library.Name
-				: String.Join(" ", new String[] { library.Name, library.Version.ToString(), });
+				: String.Join(" ", library.Name, library.Version.ToString());
 
 			this.KnownLibraries.Add(key, library);
 
