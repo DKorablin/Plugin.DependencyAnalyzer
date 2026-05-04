@@ -29,7 +29,7 @@ namespace Plugin.DependencyAnalyzer
 
 		private Object _selectedObject;
 		private Object _selectedObjectAttr;
-		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 		private IWindow Window => (IWindow)base.Parent;
 
 		private DocumentDependenciesSettings _settings;

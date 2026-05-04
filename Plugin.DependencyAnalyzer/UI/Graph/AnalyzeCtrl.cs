@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using Plugin.DependencyAnalyzer.Data;
 using SAL.Windows;
@@ -10,7 +9,7 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 {
 	internal partial class AnalyzeCtrl : UserControl
 	{
-		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 		private IWindow Window
 		{
 			get

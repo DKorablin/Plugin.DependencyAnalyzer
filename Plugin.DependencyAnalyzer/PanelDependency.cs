@@ -17,7 +17,7 @@ namespace Plugin.DependencyAnalyzer
 
 		private PanelDependencySettings _settings;
 
-		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 
 		private IWindow Window => (IWindow)base.Parent;
 

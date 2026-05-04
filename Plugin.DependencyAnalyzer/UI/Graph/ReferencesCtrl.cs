@@ -11,7 +11,7 @@ namespace Plugin.DependencyAnalyzer.UI.Graph
 {
 	internal partial class ReferencesCtrl : UserControl
 	{
-		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin;
+		private PluginWindows Plugin => (PluginWindows)this.Window.Plugin.Instance;
 
 		private IWindow Window
 		{
